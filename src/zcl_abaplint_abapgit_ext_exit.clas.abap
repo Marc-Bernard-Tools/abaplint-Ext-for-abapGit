@@ -146,6 +146,8 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
+    ri_html->add( '<div id="abaplint-message">' ).
+
     CASE is_check_run-status.
       WHEN c_git_status-queued.
         ri_html->add_a(
@@ -204,7 +206,8 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lv_msg = |{ lv_msg }: { lv_summary }|.
     ENDIF.
 
-    ri_html->add( |<div id="abaplint-message">{ lv_msg }</div>| ).
+    ri_html->add( lv_msg ).
+    ri_html->add( '</div>' ).
 
   ENDMETHOD.
 ENDCLASS.

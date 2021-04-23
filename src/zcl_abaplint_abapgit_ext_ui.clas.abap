@@ -30,8 +30,7 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
       BEGIN OF c_mode,
         no_source   TYPE i VALUE 0,
         with_source TYPE i VALUE 1,
-      END OF c_mode.
-
+      END OF c_mode .
     CONSTANTS:
       BEGIN OF c_action,
         go_back TYPE string VALUE 'go_back',
@@ -43,28 +42,33 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
     DATA mv_mode TYPE i .
     DATA mo_repo TYPE REF TO zcl_abapgit_repo_online .
     DATA mv_check_run TYPE string .
-    DATA mt_annotations TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotations .
+    DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues .
 
+    CLASS-METHODS _build_menu
+      RETURNING
+        VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar .
+    METHODS _get_issues
+      RETURNING
+        VALUE(rt_issues) TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues
+      RAISING
+        zcx_abapgit_exception .
+    METHODS _render_issues
+      RETURNING
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html
+      RAISING
+        zcx_abapgit_exception .
+    METHODS _render_issue
+      IMPORTING
+        !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
+      RETURNING
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html
+      RAISING
+        zcx_abapgit_exception .
     METHODS _render_source
       IMPORTING
         !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html .
-    METHODS _render_annotations
-      RETURNING
-        VALUE(ri_html) TYPE REF TO zif_abapgit_html
-      RAISING
-        zcx_abapgit_exception .
-    METHODS _render_annotation
-      IMPORTING
-        !is_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation
-      RETURNING
-        VALUE(ri_html) TYPE REF TO zif_abapgit_html
-      RAISING
-        zcx_abapgit_exception .
-    CLASS-METHODS _build_menu
-      RETURNING
-        VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar .
 ENDCLASS.
 
 
@@ -73,8 +77,6 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
 
   METHOD constructor.
-
-    DATA lo_annotations TYPE REF TO zcl_abaplint_abapgit_ext_annot.
 
     super->constructor( ).
 
@@ -90,12 +92,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       mv_check_run = iv_check_run.
     ENDIF.
 
-    CREATE OBJECT lo_annotations
-      EXPORTING
-        iv_url       = mo_repo->get_url( )
-        iv_check_run = mv_check_run.
-
-    mt_annotations = lo_annotations->get( ).
+    mt_issues = _get_issues( ).
 
     mv_mode = c_mode-with_source.
 
@@ -112,7 +109,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         iv_check_run = iv_check_run.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
-      iv_page_title      = 'abaplint Annotations'
+      iv_page_title      = 'abaplint Issues'
       io_page_menu       = _build_menu( )
       ii_child_component = lo_component ).
 
@@ -181,7 +178,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
                     iv_interactive_branch = abap_false ) ).
     ri_html->add( `</div>` ).
 
-    ri_html->add( _render_annotations( ) ).
+    ri_html->add( _render_issues( ) ).
 
   ENDMETHOD.
 
@@ -215,11 +212,40 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD _render_annotation.
+  METHOD _get_issues.
 
     DATA:
-      lo_issue    TYPE REF TO zcl_abaplint_abapgit_ext_issue,
-      ls_issue    TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue,
+      lo_annotations TYPE REF TO zcl_abaplint_abapgit_ext_annot,
+      ls_annotation  TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation,
+      lt_annotations TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotations,
+      lo_issue       TYPE REF TO zcl_abaplint_abapgit_ext_issue,
+      ls_issue       TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue.
+
+    CREATE OBJECT lo_annotations
+      EXPORTING
+        iv_url       = mo_repo->get_url( )
+        iv_check_run = mv_check_run.
+
+    lt_annotations = lo_annotations->get( ).
+
+    LOOP AT lt_annotations INTO ls_annotation.
+
+      CREATE OBJECT lo_issue
+        EXPORTING
+          is_annotation = ls_annotation.
+
+      ls_issue = lo_issue->get( ).
+
+      INSERT ls_issue INTO TABLE rt_issues.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD _render_issue.
+
+    DATA:
       ls_mtdkey   TYPE seocpdkey,
       lv_class    TYPE string,
       lv_icon     TYPE string,
@@ -230,14 +256,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
-    CREATE OBJECT lo_issue
-      EXPORTING
-        iv_path = is_annotation-path
-        iv_line = is_annotation-start_line.
-
-    ls_issue = lo_issue->get( ).
-
-    CASE is_annotation-annotation_level.
+    CASE is_issue-level.
       WHEN 'failure'.
         lv_class = 'ci-error'.
         lv_icon  = ri_html->icon(
@@ -252,21 +271,21 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         lv_class = 'ci-info'.
     ENDCASE.
 
-    CASE ls_issue-obj_type.
+    CASE is_issue-obj_type.
       WHEN 'CLAS'.
-        CASE to_lower( ls_issue-obj_subtype ).
+        CASE to_lower( is_issue-obj_subtype ).
           WHEN zif_abapgit_oo_object_fnc=>c_parts-locals_def.
-            lv_obj_text = |CLAS { ls_issue-obj_name } : Local Definitions|.
+            lv_obj_text = |CLAS { is_issue-obj_name } : Local Definitions|.
           WHEN zif_abapgit_oo_object_fnc=>c_parts-locals_imp.
-            lv_obj_text = |CLAS { ls_issue-obj_name } : Local Implementations|.
+            lv_obj_text = |CLAS { is_issue-obj_name } : Local Implementations|.
           WHEN zif_abapgit_oo_object_fnc=>c_parts-macros.
-            lv_obj_text = |CLAS { ls_issue-obj_name } : Macros|.
+            lv_obj_text = |CLAS { is_issue-obj_name } : Macros|.
           WHEN zif_abapgit_oo_object_fnc=>c_parts-testclasses.
-            lv_obj_text = |CLAS { ls_issue-obj_name } : Test Classes|.
+            lv_obj_text = |CLAS { is_issue-obj_name } : Test Classes|.
           WHEN OTHERS.
             cl_oo_classname_service=>get_method_by_include(
               EXPORTING
-                incname             = ls_issue-program
+                incname             = is_issue-program
               RECEIVING
                 mtdkey              = ls_mtdkey
               EXCEPTIONS
@@ -274,28 +293,28 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
                 method_not_existing = 2
                 OTHERS              = 3 ).
             IF sy-subrc = 0.
-              lv_obj_text = |CLAS { ls_issue-obj_name }->{ ls_mtdkey-cpdname }|.
+              lv_obj_text = |CLAS { is_issue-obj_name }->{ ls_mtdkey-cpdname }|.
             ELSE.
-              lv_obj_text = |CLAS { ls_issue-obj_name }|.
+              lv_obj_text = |CLAS { is_issue-obj_name }|.
             ENDIF.
         ENDCASE.
       WHEN 'FUGR'.
-        lv_obj_text = |FUGR { ls_issue-obj_name } { ls_issue-obj_subtype }|.
+        lv_obj_text = |FUGR { is_issue-obj_name } { is_issue-obj_subtype }|.
       WHEN OTHERS.
-        lv_obj_text = |{ ls_issue-obj_type } { ls_issue-obj_name }|.
+        lv_obj_text = |{ is_issue-obj_type } { is_issue-obj_name }|.
     ENDCASE.
 
     lv_msg_text = escape(
-      val    = is_annotation-title
+      val    = is_issue-title
       format = cl_abap_format=>e_html_text ).
 
     lv_msg_link = ri_html->a(
       iv_txt   = ri_html->icon( 'file-alt' )
-      iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_annotation-message }|
+      iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_issue-url }|
       iv_class = 'url' ).
 
-    lv_obj_text = |{ lv_obj_text } [ @{ ls_issue-line } ]|.
-    lv_obj_link = |{ c_action-jump }?program={ ls_issue-program }&line={ ls_issue-line }|.
+    lv_obj_text = |{ lv_obj_text } [ @{ is_issue-line } ]|.
+    lv_obj_link = |{ c_action-jump }?program={ is_issue-program }&line={ is_issue-line }|.
 
     ri_html->add( |<li class="{ lv_class }">| ).
     ri_html->add_a(
@@ -305,7 +324,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     ri_html->add( |<span>{ lv_msg_link } { lv_msg_text }</span>| ).
 
     IF mv_mode = c_mode-with_source.
-      ri_html->add( _render_source( ls_issue ) ).
+      ri_html->add( _render_source( is_issue ) ).
     ENDIF.
 
     ri_html->add( |</li>| ).
@@ -313,30 +332,30 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD _render_annotations.
+  METHOD _render_issues.
 
     CONSTANTS lc_limit TYPE i VALUE 200.
 
-    FIELD-SYMBOLS <ls_annotation> LIKE LINE OF mt_annotations.
+    DATA ls_issue LIKE LINE OF mt_issues.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="ci-result">' ).
 
-    LOOP AT mt_annotations ASSIGNING <ls_annotation> TO lc_limit.
+    LOOP AT mt_issues INTO ls_issue TO lc_limit.
 
-      ri_html->add( _render_annotation( <ls_annotation> ) ).
+      ri_html->add( _render_issue( ls_issue ) ).
 
     ENDLOOP.
 
     ri_html->add( '</div>' ).
 
-    IF lines( mt_annotations ) = 0.
+    IF lines( mt_issues ) = 0.
       ri_html->add( '<div class="dummydiv success">' ).
       ri_html->add( ri_html->icon( 'check' ) ).
       ri_html->add( 'No abaplint findings' ).
       ri_html->add( '</div>' ).
-    ELSEIF lines( mt_annotations ) > lc_limit.
+    ELSEIF lines( mt_issues ) > lc_limit.
       ri_html->add( '<div class="dummydiv warning">' ).
       ri_html->add( ri_html->icon( 'exclamation-triangle' ) ).
       ri_html->add( |Only first { lc_limit } findings shown in list| ).
@@ -352,10 +371,12 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     DATA:
       lv_source LIKE LINE OF is_issue-source,
-      lv_line   TYPE i.
+      lv_line   TYPE i,
+      lv_class  TYPE string.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
+    " Use same styles as diff pages
     ri_html->add( '<div class="diff_content">' ).
     ri_html->add( '<table class="diff_tab syntax-hl" i>' ).
     ri_html->add( '<thead class="nav_line">' ).
@@ -372,10 +393,18 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         format = cl_abap_format=>e_html_text ).
       ri_html->add( '<tr>' ).
       IF lv_line = is_issue-line.
-        ri_html->add( |<td class="num diff_del">{ lv_line }</td><td class="code diff_del">{ lv_source }</td>| ).
+        CASE is_issue-level.
+          WHEN 'failure'.
+            lv_class = 'diff_del'.
+          WHEN 'warning'.
+            lv_class = 'diff_upd'.
+          WHEN OTHERS.
+            lv_class = 'diff_ins'.
+        ENDCASE.
       ELSE.
-        ri_html->add( |<td class="num diff_others">{ lv_line }</td><td class="code diff_others">{ lv_source }</td>| ).
+        lv_class = 'diff_others'.
       ENDIF.
+      ri_html->add( |<td class="num { lv_class }">{ lv_line }</td><td class="code { lv_class }">{ lv_source }</td>| ).
       ri_html->add( '</tr>' ).
     ENDLOOP.
 

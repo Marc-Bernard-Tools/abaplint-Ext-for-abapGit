@@ -13,15 +13,17 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
         program     TYPE progname,
         line        TYPE i,
         source      TYPE rswsourcet,
+        level       TYPE string,
+        title       TYPE string,
+        url         TYPE string,
       END OF ty_issue .
     TYPES:
       ty_issues TYPE STANDARD TABLE OF ty_issue WITH DEFAULT KEY .
 
     METHODS constructor
       IMPORTING
-        !iv_path  TYPE string OPTIONAL
-        !iv_line  TYPE i OPTIONAL
-        !iv_issue TYPE string OPTIONAL
+        !is_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation OPTIONAL
+        !iv_issue      TYPE string OPTIONAL
       RAISING
         zcx_abapgit_exception .
     METHODS get
@@ -35,6 +37,7 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
     TYPES: ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY.
     DATA mv_issue TYPE string .
     DATA ms_issue TYPE ty_issue.
+    DATA ms_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation.
 
     METHODS _get_issue_clas
       IMPORTING
@@ -119,17 +122,22 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
   METHOD constructor.
 
-    IF iv_issue IS INITIAL AND iv_path IS INITIAL.
-      zcx_abapgit_exception=>raise( 'Neither issue nor path supplied' ).
+    IF iv_issue IS INITIAL AND is_annotation IS INITIAL.
+      zcx_abapgit_exception=>raise( 'Neither issue nor annotation supplied' ).
     ENDIF.
 
+    ms_annotation = is_annotation.
+
     IF iv_issue IS INITIAL.
-      mv_issue = to_upper( |{ iv_line } in { iv_path }| ).
+      mv_issue = to_upper( |{ ms_annotation-start_line } in { ms_annotation-path }| ).
     ELSE.
       mv_issue = to_upper( iv_issue ).
     ENDIF.
 
-    ms_issue = _parse( mv_issue ).
+    ms_issue       = _parse( mv_issue ).
+    ms_issue-level = ms_annotation-annotation_level.
+    ms_issue-title = ms_annotation-title.
+    ms_issue-url   = ms_annotation-message.
 
   ENDMETHOD.
 
