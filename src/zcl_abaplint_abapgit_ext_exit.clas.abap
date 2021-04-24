@@ -124,10 +124,11 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
         iv_key       = is_repo_meta-key
         is_check_run = ls_check_run ).
 
+      ls_wall-commit = lv_commit.
+      ls_wall-html   = li_html.
+
       " Cache result of completed checkruns (others might change)
       IF ls_check_run-status = c_git_status-completed.
-        ls_wall-commit = lv_commit.
-        ls_wall-html   = li_html.
         INSERT ls_wall INTO TABLE mt_wall.
       ENDIF.
 
@@ -198,10 +199,12 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
     lv_summary = is_check_run-summary.
     IF lv_summary IS NOT INITIAL ##TODO.
+      REPLACE 'First 50 annotations shown, ' IN lv_summary WITH ''.
+
       lv_summary = ri_html->a(
         iv_txt = lv_summary
-        "iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun={ is_check_run-id }| ). "todo, move back to failure
-        iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun=2009091748| ). "todo, move back to failure
+        iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun={ is_check_run-id }| ). "todo, move back to failure
+      "iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun=2009091748| ). "todo, move back to failure
 
       lv_msg = |{ lv_msg }: { lv_summary }|.
     ENDIF.

@@ -10,6 +10,7 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
         obj_type    TYPE tadir-object,
         obj_name    TYPE tadir-obj_name,
         obj_subtype TYPE string,
+        extension   TYPE string,
         program     TYPE progname,
         line        TYPE i,
         source      TYPE rswsourcet,
@@ -34,49 +35,51 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    TYPES: ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY.
+    TYPES:
+      ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY .
+
     DATA mv_issue TYPE string .
-    DATA ms_issue TYPE ty_issue.
-    DATA ms_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation.
+    DATA ms_issue TYPE ty_issue .
+    DATA ms_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation .
 
     METHODS _get_issue_clas
       IMPORTING
-        is_issue        TYPE ty_issue
+        !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
         zcx_abapgit_exception .
     METHODS _get_issue_intf
       IMPORTING
-        is_issue        TYPE ty_issue
+        !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
         zcx_abapgit_exception .
     METHODS _get_issue_prog
       IMPORTING
-        is_issue        TYPE ty_issue
+        !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
         zcx_abapgit_exception .
     METHODS _get_issue_fugr
       IMPORTING
-        is_issue        TYPE ty_issue
+        !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
         zcx_abapgit_exception .
     METHODS _get_issue_type
       IMPORTING
-        is_issue        TYPE ty_issue
+        !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
         zcx_abapgit_exception .
     METHODS _parse
       IMPORTING
-        iv_issue        TYPE string
+        !iv_issue       TYPE string
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
@@ -159,6 +162,10 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
         zcx_abapgit_exception=>raise( |Object type { ms_issue-obj_type } is not supported| ).
     ENDCASE.
 
+    IF rs_issue-extension = 'XML'.
+      CLEAR rs_issue-source.
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -193,6 +200,10 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
             ev_line    = rs_issue-line ).
     ENDCASE.
 
+    IF rs_issue-program IS INITIAL.
+      rs_issue-program = cl_oo_classname_service=>get_classpool_name( |{ is_issue-obj_name }| ).
+    ENDIF.
+
     rs_issue-source = _read_program( rs_issue-program ).
 
   ENDMETHOD.
@@ -200,7 +211,10 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
   METHOD _get_issue_fugr.
 
-    DATA lt_functab TYPE ty_functab.
+    DATA:
+      lt_functab   TYPE ty_functab,
+      lv_namespace TYPE rs38l-namespace,
+      lv_area      TYPE rs38l-area.
 
     FIELD-SYMBOLS <ls_functab> TYPE LINE OF ty_functab.
 
@@ -213,6 +227,18 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
       rs_issue-program = <ls_functab>-include.
     ELSE.
       rs_issue-program = is_issue-obj_subtype.
+    ENDIF.
+
+    IF rs_issue-program IS INITIAL.
+      CALL FUNCTION 'FUNCTION_INCLUDE_SPLIT'
+        EXPORTING
+          complete_area = |{ is_issue-obj_name }|
+        IMPORTING
+          namespace     = lv_namespace
+          group         = lv_area
+        EXCEPTIONS
+          OTHERS        = 6.
+      CONCATENATE lv_namespace 'SAPL' lv_area INTO rs_issue-program.
     ENDIF.
 
     rs_issue-source = _read_program( rs_issue-program ).
@@ -257,13 +283,14 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
       lv_obj_type    TYPE string,
       lv_obj_subtype TYPE string,
       lv_obj_name    TYPE string,
+      lv_ext         TYPE string,
       lv_rest        TYPE string.
 
-    FIND REGEX '(\d*) IN SRC\/(.*)\.(.*)\.(.*)\.ABAP' IN iv_issue
-      SUBMATCHES lv_line lv_obj_name lv_obj_type lv_obj_subtype.
+    FIND REGEX '(\d*) IN SRC\/(.*)\.(.*)\.(.*)\.(.*)' IN iv_issue
+      SUBMATCHES lv_line lv_obj_name lv_obj_type lv_obj_subtype lv_ext.
     IF sy-subrc <> 0.
-      FIND REGEX '(\d*) IN SRC\/(.*)\.(.*)\.ABAP' IN iv_issue
-        SUBMATCHES lv_line lv_obj_name lv_obj_type.
+      FIND REGEX '(\d*) IN SRC\/(.*)\.(.*)\.(.*)' IN iv_issue
+        SUBMATCHES lv_line lv_obj_name lv_obj_type lv_ext.
     ENDIF.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( 'Unable to identify object from issue description' ).
@@ -283,6 +310,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
     rs_issue-obj_type    = lv_obj_type.
     rs_issue-obj_name    = lv_obj_name.
     rs_issue-obj_subtype = lv_obj_subtype.
+    rs_issue-extension   = lv_ext.
     rs_issue-line        = lv_line.
 
   ENDMETHOD.

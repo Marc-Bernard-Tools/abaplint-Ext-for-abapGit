@@ -27,19 +27,17 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
   PRIVATE SECTION.
 
     CONSTANTS:
-      BEGIN OF c_mode,
-        no_source   TYPE i VALUE 0,
-        with_source TYPE i VALUE 1,
-      END OF c_mode .
-    CONSTANTS:
       BEGIN OF c_action,
-        go_back TYPE string VALUE 'go_back',
-        sort_1  TYPE string VALUE 'sort_1',
-        sort_2  TYPE string VALUE 'sort_2',
-        sort_3  TYPE string VALUE 'sort_3',
-        jump    TYPE string VALUE 'jump',
+        go_back            TYPE string VALUE 'go_back',
+        sort_1             TYPE string VALUE 'sort_1',
+        sort_2             TYPE string VALUE 'sort_2',
+        sort_3             TYPE string VALUE 'sort_3',
+        jump               TYPE string VALUE 'jump',
+        toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action .
-    DATA mv_mode TYPE i .
+    CONSTANTS c_initial_limit TYPE i VALUE 200 ##NO_TEXT.
+    CLASS-DATA gv_view_source TYPE abap_bool .
+    DATA mv_limit TYPE i .
     DATA mo_repo TYPE REF TO zcl_abapgit_repo_online .
     DATA mv_check_run TYPE string .
     DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues .
@@ -69,6 +67,14 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html .
+    METHODS _get_mime
+      IMPORTING
+        iv_mime_name    TYPE csequence
+      RETURNING
+        VALUE(rv_xdata) TYPE xstring
+      RAISING
+        zcx_abapgit_exception.
+
 ENDCLASS.
 
 
@@ -94,7 +100,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     mt_issues = _get_issues( ).
 
-    mv_mode = c_mode-with_source.
+    gv_view_source = abap_true.
+    mv_limit       = c_initial_limit.
 
   ENDMETHOD.
 
@@ -127,6 +134,11 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
         rs_handled-state = zcl_abapgit_gui=>c_event_state-go_back.
 
+      WHEN c_action-toggle_view_source.
+
+        gv_view_source = boolc( gv_view_source = abap_false ) ##TODO. "update menu
+        rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
+
       WHEN c_action-jump.
 
         lv_program = ii_event->query( )->get( 'PROGRAM' ).
@@ -151,13 +163,15 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-no_more_act.
 
       WHEN c_action-sort_1.
-        "SORT mt_result BY objtype objname test code sobjtype sobjname line col.
+        SORT mt_issues BY obj_type obj_name url title obj_subtype line.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
+
       WHEN c_action-sort_2.
-        "SORT mt_result BY objtype objname sobjtype sobjname line col test code.
+        SORT mt_issues BY obj_type obj_name obj_subtype line url title.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
+
       WHEN c_action-sort_3.
-        "SORT mt_result BY test code objtype objname sobjtype sobjname line col.
+        SORT mt_issues BY url title obj_type obj_name obj_subtype line.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
     ENDCASE.
@@ -168,6 +182,12 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD zif_abapgit_gui_renderable~render.
 
     gui_services( )->register_event_handler( me ).
+
+    gui_services( )->cache_asset(
+      iv_type    = 'image'
+      iv_subtype = 'png'
+      iv_url     = 'abaplint_logo.png'
+      iv_xdata   = _get_mime( 'ZABAPLINT_LOGO' ) ).
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
@@ -186,7 +206,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD _build_menu.
 
     DATA:
-      lo_sort_menu TYPE REF TO zcl_abapgit_html_toolbar.
+      lo_sort_menu TYPE REF TO zcl_abapgit_html_toolbar,
+      lo_view_menu TYPE REF TO zcl_abapgit_html_toolbar.
 
     CREATE OBJECT lo_sort_menu.
 
@@ -200,11 +221,21 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_txt = 'By Check, Object, Sub-object'
       iv_act = c_action-sort_3 ).
 
+    CREATE OBJECT lo_view_menu.
+
+    lo_view_menu->add(
+      iv_txt = 'Show Source Code'
+      iv_chk = gv_view_source
+      iv_act = c_action-toggle_view_source ).
+
     CREATE OBJECT ro_menu.
 
     ro_menu->add(
       iv_txt = 'Sort'
       io_sub = lo_sort_menu
+    )->add(
+      iv_txt = 'View'
+      io_sub = lo_view_menu
     )->add(
       iv_txt = 'Back'
       iv_act = zif_abapgit_definitions=>c_action-go_back ).
@@ -243,6 +274,57 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD _get_mime.
+
+    DATA:
+      ls_key    TYPE wwwdatatab,
+      lv_size_c TYPE wwwparams-value,
+      lv_size   TYPE i,
+      lt_w3mime TYPE STANDARD TABLE OF w3mime,
+      ls_w3mime LIKE LINE OF lt_w3mime.
+
+    ls_key-relid = 'MI'.
+    ls_key-objid = iv_mime_name.
+
+    " Get exact file size
+    CALL FUNCTION 'WWWPARAMS_READ'
+      EXPORTING
+        relid            = ls_key-relid
+        objid            = ls_key-objid
+        name             = 'filesize'
+      IMPORTING
+        value            = lv_size_c
+      EXCEPTIONS
+        entry_not_exists = 1.
+
+    IF sy-subrc IS NOT INITIAL.
+      RETURN.
+    ENDIF.
+
+    lv_size = lv_size_c.
+
+    " Get binary data
+    CALL FUNCTION 'WWWDATA_IMPORT'
+      EXPORTING
+        key               = ls_key
+      TABLES
+        mime              = lt_w3mime
+      EXCEPTIONS
+        wrong_object_type = 1
+        import_error      = 2.
+
+    IF sy-subrc IS NOT INITIAL.
+      RETURN.
+    ENDIF.
+
+    LOOP AT lt_w3mime INTO ls_w3mime.
+      CONCATENATE rv_xdata ls_w3mime-line INTO rv_xdata IN BYTE MODE.
+    ENDLOOP.
+    rv_xdata = rv_xdata(lv_size).
+
+  ENDMETHOD.
+
+
   METHOD _render_issue.
 
     DATA:
@@ -270,6 +352,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       WHEN OTHERS.
         lv_class = 'ci-info'.
     ENDCASE.
+
+    IF is_issue-extension = 'XML'.
+      BREAK-POINT.
+    ENDIF.
 
     CASE is_issue-obj_type.
       WHEN 'CLAS'.
@@ -309,7 +395,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       format = cl_abap_format=>e_html_text ).
 
     lv_msg_link = ri_html->a(
-      iv_txt   = ri_html->icon( 'file-alt' )
+      iv_txt   = |<img src="abaplint_logo.png" width="25px" height-"25px" style="background-color:lightgrey;border-radius:6px;">| "ri_html->icon( 'file-alt' )
       iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_issue-url }|
       iv_class = 'url' ).
 
@@ -321,9 +407,9 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_txt = lv_obj_text
       iv_act = lv_obj_link
       iv_typ = zif_abapgit_html=>c_action_type-sapevent ).
-    ri_html->add( |<span>{ lv_msg_link } { lv_msg_text }</span>| ).
+    ri_html->add( |<span class="margin-v5">{ lv_msg_link } { lv_msg_text }</span>| ).
 
-    IF mv_mode = c_mode-with_source.
+    IF gv_view_source = abap_true.
       ri_html->add( _render_source( is_issue ) ).
     ENDIF.
 
@@ -334,31 +420,29 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
   METHOD _render_issues.
 
-    CONSTANTS lc_limit TYPE i VALUE 200.
-
     DATA ls_issue LIKE LINE OF mt_issues.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
-    ri_html->add( '<div class="ci-result">' ).
+    ri_html->add( '<div class="ci-result"><ul>' ).
 
-    LOOP AT mt_issues INTO ls_issue TO lc_limit.
+    LOOP AT mt_issues INTO ls_issue TO mv_limit.
 
       ri_html->add( _render_issue( ls_issue ) ).
 
     ENDLOOP.
 
-    ri_html->add( '</div>' ).
+    ri_html->add( '</ul></div>' ).
 
     IF lines( mt_issues ) = 0.
       ri_html->add( '<div class="dummydiv success">' ).
       ri_html->add( ri_html->icon( 'check' ) ).
       ri_html->add( 'No abaplint findings' ).
       ri_html->add( '</div>' ).
-    ELSEIF lines( mt_issues ) > lc_limit.
+    ELSEIF lines( mt_issues ) > mv_limit.
       ri_html->add( '<div class="dummydiv warning">' ).
       ri_html->add( ri_html->icon( 'exclamation-triangle' ) ).
-      ri_html->add( |Only first { lc_limit } findings shown in list| ).
+      ri_html->add( |Only first { mv_limit } findings shown in list| ).
       ri_html->add( '</div>' ).
     ENDIF.
 
