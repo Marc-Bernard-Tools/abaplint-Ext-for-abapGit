@@ -36,12 +36,18 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action .
     CONSTANTS c_initial_limit TYPE i VALUE 200 ##NO_TEXT.
+    CONSTANTS c_logo TYPE string VALUE 'abaplint_logo.png' ##NO_TEXT.
     CLASS-DATA gv_view_source TYPE abap_bool .
     DATA mv_limit TYPE i .
     DATA mo_repo TYPE REF TO zcl_abapgit_repo_online .
     DATA mv_check_run TYPE string .
     DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues .
 
+    METHODS _get_logo
+      IMPORTING
+        !iv_title      TYPE string OPTIONAL
+      RETURNING
+        VALUE(rv_html) TYPE string .
     CLASS-METHODS _build_menu
       RETURNING
         VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar .
@@ -69,12 +75,11 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         VALUE(ri_html) TYPE REF TO zif_abapgit_html .
     METHODS _get_mime
       IMPORTING
-        iv_mime_name    TYPE csequence
+        !iv_mime_name   TYPE csequence
       RETURNING
         VALUE(rv_xdata) TYPE xstring
       RAISING
-        zcx_abapgit_exception.
-
+        zcx_abapgit_exception .
 ENDCLASS.
 
 
@@ -102,6 +107,12 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     gv_view_source = abap_true.
     mv_limit       = c_initial_limit.
+
+    gui_services( )->cache_asset(
+      iv_type    = 'image'
+      iv_subtype = 'png'
+      iv_url     = |{ c_logo }|
+      iv_xdata   = _get_mime( 'ZABAPLINT_LOGO' ) ).
 
   ENDMETHOD.
 
@@ -182,12 +193,6 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD zif_abapgit_gui_renderable~render.
 
     gui_services( )->register_event_handler( me ).
-
-    gui_services( )->cache_asset(
-      iv_type    = 'image'
-      iv_subtype = 'png'
-      iv_url     = 'abaplint_logo.png'
-      iv_xdata   = _get_mime( 'ZABAPLINT_LOGO' ) ).
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
@@ -274,6 +279,14 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD _get_logo.
+    rv_html =
+      |<img src="{ c_logo }" width="25px" height-"25px" | &&
+      |title="{ iv_title }" | &&
+      |style="background-color:lightgrey;border-radius:6px;">|.
+  ENDMETHOD.
+
+
   METHOD _get_mime.
 
     DATA:
@@ -334,7 +347,9 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       lv_obj_text TYPE string,
       lv_obj_link TYPE string,
       lv_msg_text TYPE string,
-      lv_msg_link TYPE string.
+      lv_msg_link TYPE string,
+      lv_msg_code TYPE string,
+      lv_rest     TYPE string.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
@@ -352,10 +367,6 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       WHEN OTHERS.
         lv_class = 'ci-info'.
     ENDCASE.
-
-    IF is_issue-extension = 'XML'.
-      BREAK-POINT.
-    ENDIF.
 
     CASE is_issue-obj_type.
       WHEN 'CLAS'.
@@ -394,8 +405,12 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       val    = is_issue-title
       format = cl_abap_format=>e_html_text ).
 
+    lv_msg_code = reverse( is_issue-url ).
+    SPLIT lv_msg_code AT '/' INTO lv_msg_code lv_rest.
+    lv_msg_code = reverse( lv_msg_code ).
+
     lv_msg_link = ri_html->a(
-      iv_txt   = |<img src="abaplint_logo.png" width="25px" height-"25px" style="background-color:lightgrey;border-radius:6px;">| "ri_html->icon( 'file-alt' )
+      iv_txt   = lv_msg_code
       iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_issue-url }|
       iv_class = 'url' ).
 
@@ -407,7 +422,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_txt = lv_obj_text
       iv_act = lv_obj_link
       iv_typ = zif_abapgit_html=>c_action_type-sapevent ).
-    ri_html->add( |<span class="margin-v5">{ lv_msg_link } { lv_msg_text }</span>| ).
+    ri_html->add( |<span class="margin-v5">{ _get_logo( lv_msg_code ) } { lv_msg_text } ({ lv_msg_link })</span>| ).
 
     IF gv_view_source = abap_true.
       ri_html->add( _render_source( is_issue ) ).
