@@ -338,10 +338,12 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
   METHOD _read_class_line.
 
     DATA:
+      lx_error    TYPE REF TO cx_root,
       lo_instance TYPE REF TO cl_oo_factory,
       lo_source   TYPE REF TO cl_oo_clif_source,
       lo_scanner  TYPE REF TO cl_oo_source_scanner_class,
       ls_int      TYPE cl_oo_source_scanner_class=>type_source_interval,
+      lt_methods  TYPE cl_oo_source_scanner_class=>type_method_implementations,
       ls_method   TYPE seocpdkey.
 
     TRY.
@@ -379,7 +381,8 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
         ENDIF.
 
         ls_method-clsname = iv_clsname.
-        LOOP AT lo_scanner->get_method_implementations( ) INTO ls_method-cpdname.
+        lt_methods = lo_scanner->get_method_implementations( ).
+        LOOP AT lt_methods INTO ls_method-cpdname.
           ls_int = lo_scanner->get_method_impl_interval( ls_method-cpdname ).
           IF iv_line >= ls_int-begin-line AND iv_line < ls_int-end-line.
             ev_program = cl_oo_classname_service=>get_method_include( ls_method ).
@@ -388,7 +391,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
           ENDIF.
         ENDLOOP.
 
-      CATCH cx_root INTO DATA(lx_error).
+      CATCH cx_root INTO lx_error.
         MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
     ENDTRY.
 

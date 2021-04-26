@@ -198,13 +198,13 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     ENDIF.
 
     lv_summary = is_check_run-summary.
-    IF lv_summary IS NOT INITIAL ##TODO.
+    IF lv_summary IS NOT INITIAL.
       REPLACE 'First 50 annotations shown, ' IN lv_summary WITH ''.
 
+      " todo, maybe better to show link only for failures
       lv_summary = ri_html->a(
         iv_txt = lv_summary
-        iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun={ is_check_run-id }| ). "todo, move back to failure
-      "iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun=2009091748| ). "todo, move back to failure
+        iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun={ is_check_run-id }| ).
 
       lv_msg = |{ lv_msg }: { lv_summary }|.
     ENDIF.

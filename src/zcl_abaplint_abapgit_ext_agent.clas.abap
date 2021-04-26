@@ -12,17 +12,22 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
         VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_agent
       RAISING
         zcx_abapgit_exception .
-    METHODS get_check_runs
+    METHODS constructor
       IMPORTING
-        !iv_commit     TYPE zif_abapgit_definitions=>ty_sha1
+        !iv_url TYPE string
+      RAISING
+        zcx_abapgit_exception .
+    METHODS get_annotations
+      IMPORTING
+        !iv_check_run  TYPE string
       RETURNING
         VALUE(ri_json) TYPE REF TO zif_abapgit_ajson_reader
       RAISING
         zcx_abapgit_exception
         zcx_abapgit_ajson_error .
-    METHODS get_annotations
+    METHODS get_check_runs
       IMPORTING
-        !iv_check_run  TYPE string
+        !iv_commit     TYPE zif_abapgit_definitions=>ty_sha1
       RETURNING
         VALUE(ri_json) TYPE REF TO zif_abapgit_ajson_reader
       RAISING
@@ -35,19 +40,12 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
       BEGIN OF ty_instance,
         url       TYPE string,
         instanace TYPE REF TO zcl_abaplint_abapgit_ext_agent,
-      END OF ty_instance.
+      END OF ty_instance .
 
     CLASS-DATA:
-      gt_instance TYPE HASHED TABLE OF ty_instance WITH UNIQUE KEY url.
-
-    DATA mv_url TYPE string.
+      gt_instance TYPE HASHED TABLE OF ty_instance WITH UNIQUE KEY url .
+    DATA mv_url TYPE string .
     DATA mo_agent TYPE REF TO zif_abapgit_http_agent .
-
-    METHODS constructor
-      IMPORTING
-        !iv_url TYPE string
-      RAISING
-        zcx_abapgit_exception .
 ENDCLASS.
 
 

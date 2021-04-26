@@ -36,6 +36,8 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action .
     CONSTANTS c_initial_limit TYPE i VALUE 200 ##NO_TEXT.
+    CONSTANTS c_lines_before TYPE i VALUE 5.
+    CONSTANTS c_lines_after TYPE i VALUE 5.
     CONSTANTS c_logo TYPE string VALUE 'abaplint_logo.png' ##NO_TEXT.
     CLASS-DATA gv_view_source TYPE abap_bool .
     DATA mv_limit TYPE i .
@@ -43,11 +45,6 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
     DATA mv_check_run TYPE string .
     DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues .
 
-    METHODS _get_logo
-      IMPORTING
-        !iv_title      TYPE string OPTIONAL
-      RETURNING
-        VALUE(rv_html) TYPE string .
     CLASS-METHODS _build_menu
       RETURNING
         VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar .
@@ -56,9 +53,16 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         VALUE(rt_issues) TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues
       RAISING
         zcx_abapgit_exception .
-    METHODS _render_issues
+    METHODS _get_logo
+      IMPORTING
+        !iv_title      TYPE string OPTIONAL
       RETURNING
-        VALUE(ri_html) TYPE REF TO zif_abapgit_html
+        VALUE(rv_html) TYPE string .
+    METHODS _get_mime
+      IMPORTING
+        !iv_mime_name   TYPE csequence
+      RETURNING
+        VALUE(rv_xdata) TYPE xstring
       RAISING
         zcx_abapgit_exception .
     METHODS _render_issue
@@ -68,18 +72,16 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
         zcx_abapgit_exception .
+    METHODS _render_issues
+      RETURNING
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html
+      RAISING
+        zcx_abapgit_exception .
     METHODS _render_source
       IMPORTING
         !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html .
-    METHODS _get_mime
-      IMPORTING
-        !iv_mime_name   TYPE csequence
-      RETURNING
-        VALUE(rv_xdata) TYPE xstring
-      RAISING
-        zcx_abapgit_exception .
 ENDCLASS.
 
 
@@ -229,7 +231,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     CREATE OBJECT lo_view_menu.
 
     lo_view_menu->add(
-      iv_txt = 'Show Source Code'
+      iv_txt = 'Source Code'
       iv_chk = gv_view_source
       iv_act = c_action-toggle_view_source ).
 
@@ -466,8 +468,6 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
   METHOD _render_source.
 
-    CONSTANTS c_lines TYPE i VALUE 5.
-
     DATA:
       lv_source LIKE LINE OF is_issue-source,
       lv_line   TYPE i,
@@ -485,7 +485,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     ri_html->add( '</tr>' ).
     ri_html->add( '</thead>' ).
 
-    LOOP AT is_issue-source INTO lv_source FROM ( is_issue-line - c_lines ) TO ( is_issue-line + c_lines ).
+    LOOP AT is_issue-source INTO lv_source FROM is_issue-line - c_lines_before TO is_issue-line + c_lines_after.
       lv_line = sy-tabix.
       lv_source = escape(
         val = lv_source

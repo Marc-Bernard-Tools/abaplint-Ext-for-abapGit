@@ -87,7 +87,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
               cl_abap_char_utilities=>newline && cl_abap_char_utilities=>newline
               IN rs_check_run-summary WITH ', '.
 
-            EXIT. ">>>
+            EXIT.
 
           ENDIF.
 
