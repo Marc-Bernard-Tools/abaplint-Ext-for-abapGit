@@ -250,7 +250,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
     MOVE-CORRESPONDING is_issue TO rs_issue.
 
-    rs_issue-program = cl_oo_classname_service=>get_intfsec_name( |{ is_issue-obj_name }| ).
+    rs_issue-program = cl_oo_classname_service=>get_interfacepool_name( |{ is_issue-obj_name }| ).
     rs_issue-source = _read_program( rs_issue-program ).
 
   ENDMETHOD.
@@ -353,9 +353,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
           clif_name = iv_clsname
           version   = 'A' ).
 
-        lo_source->get_source(
-          IMPORTING
-            source = et_source ).
+        lo_source->get_source( IMPORTING source = et_source ).
 
         lo_scanner ?= lo_source->get_scanner( ).
 

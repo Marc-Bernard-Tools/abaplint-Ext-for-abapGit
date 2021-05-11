@@ -88,7 +88,9 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       ls_check_run   TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run,
       li_html        TYPE REF TO zif_abapgit_html.
 
-    CHECK is_repo_meta-offline IS INITIAL.
+    IF is_repo_meta-offline = abap_true.
+      RETURN.
+    ENDIF.
 
     TRY.
         lo_repo_online ?= zcl_abapgit_repo_srv=>get_instance( )->get( is_repo_meta-key ).
@@ -153,13 +155,13 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       WHEN c_git_status-queued.
         ri_html->add_a(
           iv_txt  = zcl_abapgit_html=>icon(
-            iv_name = 'arrow-circle-up'
+            iv_name = 'circle-solid'
             iv_hint = is_check_run-status )
           iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
       WHEN c_git_status-in_progress.
         ri_html->add_a(
           iv_txt  = zcl_abapgit_html=>icon(
-            iv_name  = 'arrow-circle-up'
+            iv_name  = 'circle-solid'
             iv_class = 'warning'
             iv_hint  = is_check_run-status )
           iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
@@ -168,7 +170,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
           WHEN c_git_conclusion-neutral.
             ri_html->add_a(
               iv_txt  = zcl_abapgit_html=>icon(
-                iv_name = 'arrow-circle-up'
+                iv_name = 'circle-solid'
                 iv_hint = is_check_run-conclusion )
               iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
           WHEN c_git_conclusion-success.
@@ -181,7 +183,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
           WHEN c_git_conclusion-failure.
             ri_html->add_a(
               iv_txt  = zcl_abapgit_html=>icon(
-                iv_name  = 'exclamation-circle'
+                iv_name  = 'times-solid'
                 iv_class = 'error'
                 iv_hint  = is_check_run-conclusion )
               iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).

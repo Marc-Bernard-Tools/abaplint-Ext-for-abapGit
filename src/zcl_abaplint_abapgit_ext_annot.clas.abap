@@ -8,7 +8,8 @@ CLASS zcl_abaplint_abapgit_ext_annot DEFINITION
     TYPES:
 * Example:
 *     "path": "src/dev/zcl_abapinst_installer.clas.abap",
-*     "blob_href": "https://github.com/Marc-Bernard-Tools/ABAP-Installer/blob/95990d129bf6e29701917804c4d2e9f93a701f2f/src/dev/zcl_abapinst_installer.clas.abap",
+*     "blob_href": "https://github.com/Marc-Bernard-Tools/ABAP-Installer/blob/
+*       95990d129bf6e29701917804c4d2e9f93a701f2f/src/dev/zcl_abapinst_installer.clas.abap",
 *     "start_line": 631,
 *     "start_column": null,
 *     "end_line": 631,

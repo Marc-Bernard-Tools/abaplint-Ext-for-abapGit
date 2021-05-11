@@ -35,7 +35,7 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         jump               TYPE string VALUE 'jump',
         toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action .
-    CONSTANTS c_initial_limit TYPE i VALUE 200 ##NO_TEXT.
+    CONSTANTS c_initial_limit TYPE i VALUE 200.
     CONSTANTS c_lines_before TYPE i VALUE 5.
     CONSTANTS c_lines_after TYPE i VALUE 5.
     CONSTANTS c_logo TYPE string VALUE 'abaplint_logo.png' ##NO_TEXT.
@@ -149,7 +149,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
       WHEN c_action-toggle_view_source.
 
-        gv_view_source = boolc( gv_view_source = abap_false ) ##TODO. "update menu
+        "todo, update menu
+        gv_view_source = boolc( gv_view_source = abap_false ) ##TODO.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
       WHEN c_action-jump.
