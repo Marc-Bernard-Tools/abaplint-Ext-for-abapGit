@@ -814,7 +814,12 @@
   },
   "syntax": {
     "errorNamespace": "^(Z|Y|LCL_|TY_|LIF_)",
-    "globalConstants": [],
+    "globalConstants": [
+      "seop_ext_class_locals_def",
+      "seop_ext_class_locals_imp",
+      "seop_ext_class_macros",
+      "seop_ext_class_testclasses"
+    ],
     "globalMacros": [],
     "version": "v702"
   }
