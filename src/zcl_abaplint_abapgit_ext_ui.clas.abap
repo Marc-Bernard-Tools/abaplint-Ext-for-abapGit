@@ -222,10 +222,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     lo_sort_menu->add(
       iv_txt = 'By Object, Check, Sub-object'
       iv_act = c_action-sort_1
-    )->add(
+      )->add(
       iv_txt = 'By Object, Sub-object, Line'
       iv_act = c_action-sort_2
-    )->add(
+      )->add(
       iv_txt = 'By Check, Object, Sub-object'
       iv_act = c_action-sort_3 ).
 
@@ -241,10 +241,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     ro_menu->add(
       iv_txt = 'Sort'
       io_sub = lo_sort_menu
-    )->add(
+      )->add(
       iv_txt = 'View'
       io_sub = lo_view_menu
-    )->add(
+      )->add(
       iv_txt = 'Back'
       iv_act = zif_abapgit_definitions=>c_action-go_back ).
 
