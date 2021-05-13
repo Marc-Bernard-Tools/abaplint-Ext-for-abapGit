@@ -1,7 +1,7 @@
 CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC .
+  CREATE PRIVATE .
 
   PUBLIC SECTION.
 
