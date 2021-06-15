@@ -427,7 +427,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
     READ REPORT iv_program INTO rt_source STATE 'A'.
     IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise( |Error reading active source of program { iv_program }| ).
+      APPEND |Program { iv_program } does not exist in active version| TO rt_source.
     ENDIF.
 
   ENDMETHOD.

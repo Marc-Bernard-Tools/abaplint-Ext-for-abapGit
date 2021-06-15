@@ -32,7 +32,7 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         sort_1             TYPE string VALUE 'sort_1',
         sort_2             TYPE string VALUE 'sort_2',
         sort_3             TYPE string VALUE 'sort_3',
-        jump               TYPE string VALUE 'jump',
+        jump_edit          TYPE string VALUE 'jump_edit',
         toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action .
     CONSTANTS c_initial_limit TYPE i VALUE 200.
@@ -153,14 +153,14 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         gv_view_source = boolc( gv_view_source = abap_false ) ##TODO.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
-      WHEN c_action-jump.
+      WHEN c_action-jump_edit.
 
         lv_program = ii_event->query( )->get( 'PROGRAM' ).
         lv_line    = ii_event->query( )->get( 'LINE' ).
 
         CALL FUNCTION 'RS_TOOL_ACCESS'
           EXPORTING
-            operation           = 'SHOW'
+            operation           = 'EDIT'
             object_name         = lv_program
             object_type         = 'PROG'
             include             = lv_program
@@ -418,7 +418,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_class = 'url' ).
 
     lv_obj_text = |{ lv_obj_text } [ @{ is_issue-line } ]|.
-    lv_obj_link = |{ c_action-jump }?program={ is_issue-program }&line={ is_issue-line }|.
+    lv_obj_link = |{ c_action-jump_edit }?program={ is_issue-program }&line={ is_issue-line }|.
 
     ri_html->add( |<li class="{ lv_class }">| ).
     ri_html->add_a(
@@ -507,6 +507,11 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       ri_html->add( |<td class="num { lv_class }">{ lv_line }</td><td class="code { lv_class }">{ lv_source }</td>| ).
       ri_html->add( '</tr>' ).
     ENDLOOP.
+    IF sy-subrc <> 0.
+      ri_html->add( '<tr>' ).
+      ri_html->add( |<td class="num diff_upd">0</td><td class="code diff_upd">Source location does not exist (anymore)</td>| ).
+      ri_html->add( '</tr>' ).
+    ENDIF.
 
     ri_html->add( '</table>' ).
     ri_html->add( '</div>' ).

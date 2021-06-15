@@ -55,7 +55,8 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
       lt_check_runs TYPE TABLE OF string,
       lv_check_run  TYPE string,
       lv_msg        TYPE string,
-      lv_app        TYPE string.
+      lv_app        TYPE string,
+      lv_name       TYPE string.
 
     TRY.
         li_json = zcl_abaplint_abapgit_ext_agent=>get_instance( mv_url )->get_check_runs( mv_commit ).
@@ -71,13 +72,14 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
         LOOP AT lt_check_runs INTO lv_check_run.
 
           lv_app = li_json->get( |/check_runs/{ lv_check_run }/app/name| ).
+          lv_name = li_json->get( |/check_runs/{ lv_check_run }/name| ).
 
-          " Only interested in abaplint run
-          IF lv_app = 'abaplint'.
+          " Only interested in abaplint run (not builds or abalint/observations)
+          IF lv_app = 'abaplint' AND lv_name = 'abaplint'.
 
             rs_check_run-app        = lv_app.
+            rs_check_run-name       = lv_name.
             rs_check_run-id         = li_json->get( |/check_runs/{ lv_check_run }/id| ).
-            rs_check_run-name       = li_json->get( |/check_runs/{ lv_check_run }/name| ).
             rs_check_run-status     = li_json->get( |/check_runs/{ lv_check_run }/status| ).
             rs_check_run-conclusion = li_json->get( |/check_runs/{ lv_check_run }/conclusion| ).
             rs_check_run-url        = li_json->get( |/check_runs/{ lv_check_run }/html_url| ).
