@@ -425,9 +425,12 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
   METHOD _read_program.
 
+    DATA lv_msg LIKE LINE OF rt_source.
+
     READ REPORT iv_program INTO rt_source STATE 'A'.
     IF sy-subrc <> 0.
-      APPEND |Program { iv_program } does not exist in active version| TO rt_source.
+      lv_msg = |Program { iv_program } does not exist in active version|.
+      APPEND lv_msg TO rt_source.
     ENDIF.
 
   ENDMETHOD.

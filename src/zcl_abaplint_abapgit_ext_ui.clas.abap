@@ -489,16 +489,19 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     LOOP AT is_issue-source INTO lv_source FROM is_issue-line - c_lines_before TO is_issue-line + c_lines_after.
       lv_line = sy-tabix.
       lv_source = escape(
-        val = lv_source
+        val    = lv_source
         format = cl_abap_format=>e_html_text ).
       ri_html->add( '<tr>' ).
       IF lv_line = is_issue-line.
         CASE is_issue-level.
           WHEN 'failure'.
+            "red
             lv_class = 'diff_del'.
           WHEN 'warning'.
+            "yellow
             lv_class = 'diff_upd'.
           WHEN OTHERS.
+            "green
             lv_class = 'diff_ins'.
         ENDCASE.
       ELSE.
@@ -509,7 +512,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     ENDLOOP.
     IF sy-subrc <> 0.
       ri_html->add( '<tr>' ).
-      ri_html->add( |<td class="num diff_upd">0</td><td class="code diff_upd">Source location does not exist (anymore)</td>| ).
+      ri_html->add( '<td class="num diff_upd">0</td>' ).
+      ri_html->add( '<td class="code diff_upd">Source location does not exist (anymore)</td>' ).
       ri_html->add( '</tr>' ).
     ENDIF.
 
