@@ -14,6 +14,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
         id         TYPE string,
         url        TYPE string,
         summary    TYPE string,
+        count      TYPE i,
       END OF ty_check_run.
 
     METHODS constructor
@@ -50,7 +51,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
   METHOD get.
 
     DATA:
-      li_json       TYPE REF TO zif_abapgit_ajson_reader,
+      li_json       TYPE REF TO zif_abapgit_ajson,
       lx_error      TYPE REF TO zcx_abapgit_ajson_error,
       lt_check_runs TYPE TABLE OF string,
       lv_check_run  TYPE string,
@@ -84,6 +85,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
             rs_check_run-conclusion = li_json->get( |/check_runs/{ lv_check_run }/conclusion| ).
             rs_check_run-url        = li_json->get( |/check_runs/{ lv_check_run }/html_url| ).
             rs_check_run-summary    = li_json->get( |/check_runs/{ lv_check_run }/output/summary| ).
+            rs_check_run-count      = li_json->get( |/check_runs/{ lv_check_run }/output/annotation_count| ).
 
             REPLACE ALL OCCURRENCES OF
               cl_abap_char_utilities=>newline && cl_abap_char_utilities=>newline

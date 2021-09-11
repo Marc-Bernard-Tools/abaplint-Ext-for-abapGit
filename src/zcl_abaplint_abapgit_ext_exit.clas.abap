@@ -19,6 +19,9 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
       IMPORTING
         !is_repo_meta TYPE zif_abapgit_persistence=>ty_repo
         !ii_html      TYPE REF TO zif_abapgit_html .
+    METHODS get_last_url
+      RETURNING
+        VALUE(rv_url) TYPE string.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -26,6 +29,7 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
       BEGIN OF ty_wall,
         commit TYPE string,
         html   TYPE REF TO zif_abapgit_html,
+        url    TYPE string,
       END OF ty_wall .
 
     CONSTANTS:
@@ -44,8 +48,10 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
         success TYPE string VALUE 'success',
         failure TYPE string VALUE 'failure',
       END OF c_git_conclusion .
+    CLASS-DATA go_instance TYPE REF TO zcl_abaplint_abapgit_ext_exit.
     DATA:
       mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit .
+    DATA mv_last_url TYPE string.
 
     METHODS _wall_message_abaplint
       IMPORTING
@@ -61,7 +67,15 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
 
   METHOD get_instance.
-    CREATE OBJECT ro_instance.
+    IF go_instance IS INITIAL.
+      CREATE OBJECT go_instance.
+    ENDIF.
+    ro_instance = go_instance.
+  ENDMETHOD.
+
+
+  METHOD get_last_url.
+    rv_url = mv_last_url.
   ENDMETHOD.
 
 
@@ -128,6 +142,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
       ls_wall-commit = lv_commit.
       ls_wall-html   = li_html.
+      ls_wall-url    = ls_check_run-url.
 
       " Cache result of completed checkruns (others might change)
       IF ls_check_run-status = c_git_status-completed.
@@ -137,6 +152,9 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     ENDIF.
 
     ii_html->add( ls_wall-html->render( ) ).
+
+    " Remember URL of last shown check run
+    mv_last_url = ls_wall-url.
 
   ENDMETHOD.
 

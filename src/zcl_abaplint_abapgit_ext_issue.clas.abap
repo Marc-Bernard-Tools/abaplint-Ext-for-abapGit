@@ -25,6 +25,7 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
       IMPORTING
         !is_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation OPTIONAL
         !iv_issue      TYPE string OPTIONAL
+        !iv_folder     TYPE string DEFAULT '/src/'
       RAISING
         zcx_abapgit_exception .
     METHODS get
@@ -38,10 +39,20 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
     TYPES:
       ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY .
 
+    CONSTANTS:
+      c_active TYPE c LENGTH 1 VALUE 'A' ##NO_TEXT.
+    DATA mv_folder TYPE string .
     DATA mv_issue TYPE string .
     DATA ms_issue TYPE ty_issue .
     DATA ms_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation .
 
+    METHODS _folder_for_regex
+      IMPORTING
+        !iv_folder       TYPE string
+      RETURNING
+        VALUE(rv_folder) TYPE string
+      RAISING
+        zcx_abapgit_exception .
     METHODS _get_issue_clas
       IMPORTING
         !is_issue       TYPE ty_issue
@@ -142,6 +153,8 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
     ms_issue-title = ms_annotation-title.
     ms_issue-url   = ms_annotation-message.
 
+    mv_folder = _folder_for_regex( iv_folder ).
+
   ENDMETHOD.
 
 
@@ -158,6 +171,8 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
         rs_issue = _get_issue_fugr( ms_issue ).
       WHEN 'TYPE'.
         rs_issue = _get_issue_type( ms_issue ).
+      WHEN 'DOMA' OR 'DTEL' OR 'TABL' OR 'TTYP'.
+        MOVE-CORRESPONDING ms_issue TO rs_issue.
       WHEN OTHERS.
         zcx_abapgit_exception=>raise( |Object type { ms_issue-obj_type } is not supported| ).
     ENDCASE.
@@ -165,6 +180,20 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
     IF rs_issue-extension = 'XML'.
       CLEAR rs_issue-source.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD _folder_for_regex.
+
+    IF strlen( iv_folder ) < 1.
+      zcx_abapgit_exception=>raise( 'Missing starting folder' ).
+    ENDIF.
+
+    rv_folder = replace(
+      val  = to_upper( iv_folder+1 )
+      sub  = '/'
+      with = '\/' ).
 
   ENDMETHOD.
 
@@ -279,24 +308,29 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
   METHOD _parse.
 
     DATA:
-      lv_line        TYPE string,
-      lv_obj_type    TYPE string,
-      lv_obj_subtype TYPE string,
-      lv_obj_name    TYPE string,
-      lv_ext         TYPE string,
-      lv_rest        TYPE string.
+      lv_regex_type    TYPE string,
+      lv_regex_subtype TYPE string,
+      lv_line          TYPE string,
+      lv_obj_type      TYPE string,
+      lv_obj_subtype   TYPE string,
+      lv_obj_name      TYPE string,
+      lv_ext           TYPE string,
+      lv_rest          TYPE string.
 
-    FIND REGEX '(\d*) IN SRC\/(.*)\.(.*)\.(.*)\.(.*)' IN iv_issue
+    lv_regex_subtype = '(\d*) IN ' && mv_folder && '(.*)\.(.*)\.(.*)\.(.*)'.
+    lv_regex_type    = '(\d*) IN ' && mv_folder && '(.*)\.(.*)\.(.*)'.
+
+    FIND REGEX lv_regex_subtype IN iv_issue
       SUBMATCHES lv_line lv_obj_name lv_obj_type lv_obj_subtype lv_ext.
     IF sy-subrc <> 0.
-      FIND REGEX '(\d*) IN SRC\/(.*)\.(.*)\.(.*)' IN iv_issue
+      FIND REGEX lv_regex_type IN iv_issue
         SUBMATCHES lv_line lv_obj_name lv_obj_type lv_ext.
     ENDIF.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( 'Unable to identify object from issue description' ).
     ENDIF.
 
-    DO 10 TIMES.
+    DO.
       IF lv_obj_name CS '/'.
         SPLIT lv_obj_name AT '/' INTO lv_rest lv_obj_name.
       ELSE.
@@ -351,7 +385,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
         lo_source ?= lo_instance->create_clif_source(
           clif_name = iv_clsname
-          version   = 'A' ).
+          version   = c_active ).
 
         lo_source->get_source( IMPORTING source = et_source ).
 
@@ -412,7 +446,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-* The result can also contain function which are lowercase.
+    " The result can also contain function which are lowercase
     LOOP AT rt_functab ASSIGNING <ls_functab>.
       TRANSLATE <ls_functab> TO UPPER CASE.
     ENDLOOP.
@@ -427,7 +461,9 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
     DATA lv_msg LIKE LINE OF rt_source.
 
-    READ REPORT iv_program INTO rt_source STATE 'A'.
+    " abapGit only deals with active objects which we read here
+    " Note: The issue might be fixed already in inactive code
+    READ REPORT iv_program INTO rt_source STATE c_active.
     IF sy-subrc <> 0.
       lv_msg = |Program { iv_program } does not exist in active version|.
       APPEND lv_msg TO rt_source.

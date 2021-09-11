@@ -65,8 +65,8 @@ CLASS zcl_abaplint_abapgit_ext_annot IMPLEMENTATION.
   METHOD get.
 
     DATA:
-      li_json       TYPE REF TO zif_abapgit_ajson_reader,
-      li_json_anno  TYPE REF TO zif_abapgit_ajson_reader,
+      li_json       TYPE REF TO zif_abapgit_ajson,
+      li_json_anno  TYPE REF TO zif_abapgit_ajson,
       lx_error      TYPE REF TO zcx_abapgit_ajson_error,
       lv_msg        TYPE string,
       lt_anno       TYPE TABLE OF string,

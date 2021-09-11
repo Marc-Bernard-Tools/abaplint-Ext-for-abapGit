@@ -35,12 +35,10 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         jump_edit          TYPE string VALUE 'jump_edit',
         toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action .
-    CONSTANTS c_initial_limit TYPE i VALUE 200.
     CONSTANTS c_lines_before TYPE i VALUE 5.
     CONSTANTS c_lines_after TYPE i VALUE 5.
     CONSTANTS c_logo TYPE string VALUE 'abaplint_logo.png' ##NO_TEXT.
     CLASS-DATA gv_view_source TYPE abap_bool .
-    DATA mv_limit TYPE i .
     DATA mo_repo TYPE REF TO zcl_abapgit_repo_online .
     DATA mv_check_run TYPE string .
     DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues .
@@ -107,8 +105,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     mt_issues = _get_issues( ).
 
-    gv_view_source = abap_true.
-    mv_limit       = c_initial_limit.
+    gv_view_source = abap_true. " Could be a user setting
 
     gui_services( )->cache_asset(
       iv_type    = 'image'
@@ -149,7 +146,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
       WHEN c_action-toggle_view_source.
 
-        "todo, update menu
+        "todo, update menu which requires enhancement of ZCL_ABAPGIT_GUI_PAGE_HOC
         gv_view_source = boolc( gv_view_source = abap_false ) ##TODO.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
@@ -438,13 +435,18 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
   METHOD _render_issues.
 
-    DATA ls_issue LIKE LINE OF mt_issues.
+    DATA:
+      ls_issue LIKE LINE OF mt_issues,
+      lv_max   TYPE i,
+      lv_url   TYPE string.
+
+    lv_max = zcl_abaplint_abapgit_ext_agent=>c_max_annotations.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="ci-result"><ul>' ).
 
-    LOOP AT mt_issues INTO ls_issue TO mv_limit.
+    LOOP AT mt_issues INTO ls_issue TO lv_max.
 
       ri_html->add( _render_issue( ls_issue ) ).
 
@@ -457,10 +459,14 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       ri_html->add( ri_html->icon( 'check' ) ).
       ri_html->add( 'No abaplint findings' ).
       ri_html->add( '</div>' ).
-    ELSEIF lines( mt_issues ) > mv_limit.
+    ELSEIF lines( mt_issues ) > lv_max.
+      lv_url = zcl_abaplint_abapgit_ext_exit=>get_instance( )->get_last_url( ).
       ri_html->add( '<div class="dummydiv warning">' ).
       ri_html->add( ri_html->icon( 'exclamation-triangle' ) ).
-      ri_html->add( |Only first { mv_limit } findings shown in list| ).
+      ri_html->add( |Only first { lv_max } findings shown in list.| ).
+      ri_html->add_a(
+        iv_txt  = 'Show more...'
+        iv_act  = |{ zif_abapgit_definitions=>c_action-url }?url={ lv_url }| ).
       ri_html->add( '</div>' ).
     ENDIF.
 
@@ -475,6 +481,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       lv_class  TYPE string.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+
+    IF is_issue-source IS INITIAL.
+      RETURN.
+    ENDIF.
 
     " Use same styles as diff pages
     ri_html->add( '<div class="diff_content">' ).

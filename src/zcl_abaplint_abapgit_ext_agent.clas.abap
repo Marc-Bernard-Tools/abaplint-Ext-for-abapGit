@@ -3,7 +3,12 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
   FINAL
   CREATE PRIVATE .
 
+  " Calling Github API for check runs and annotations
+  " https://docs.github.com/en/rest/reference/checks
+
   PUBLIC SECTION.
+
+    CONSTANTS c_max_annotations TYPE i VALUE 100. "max without paging
 
     CLASS-METHODS get_instance
       IMPORTING
@@ -21,7 +26,7 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
       IMPORTING
         !iv_check_run  TYPE string
       RETURNING
-        VALUE(ri_json) TYPE REF TO zif_abapgit_ajson_reader
+        VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abapgit_exception
         zcx_abapgit_ajson_error .
@@ -29,7 +34,7 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
       IMPORTING
         !iv_commit     TYPE zif_abapgit_definitions=>ty_sha1
       RETURNING
-        VALUE(ri_json) TYPE REF TO zif_abapgit_ajson_reader
+        VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abapgit_exception
         zcx_abapgit_ajson_error .
@@ -89,7 +94,8 @@ CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
 
     DATA lv_url TYPE string.
 
-    lv_url = mv_url && |/check-runs/{ iv_check_run }/annotations|.
+    " Get first 100 annotations which is the current max before paging (default = 30)
+    lv_url = mv_url && |/check-runs/{ iv_check_run }/annotations?per_page={ c_max_annotations }|.
 
     ri_json = mo_agent->request( lv_url )->json( ).
 
