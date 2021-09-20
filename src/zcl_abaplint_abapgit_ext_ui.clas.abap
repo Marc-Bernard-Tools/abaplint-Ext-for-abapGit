@@ -105,7 +105,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     mt_issues = _get_issues( ).
 
-    gv_view_source = abap_true. " Could be a user setting
+    " Could be a user setting
+    gv_view_source = abap_true.
 
     gui_services( )->cache_asset(
       iv_type    = 'image'
@@ -174,11 +175,11 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-no_more_act.
 
       WHEN c_action-sort_1.
-        SORT mt_issues BY obj_type obj_name url title obj_subtype line.
+        SORT mt_issues BY obj_type obj_name obj_subtype line url title.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
       WHEN c_action-sort_2.
-        SORT mt_issues BY obj_type obj_name obj_subtype line url title.
+        SORT mt_issues BY obj_type obj_name url title obj_subtype line.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
       WHEN c_action-sort_3.
@@ -217,10 +218,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     CREATE OBJECT lo_sort_menu.
 
     lo_sort_menu->add(
-      iv_txt = 'By Object, Check, Sub-object'
+      iv_txt = 'By Object, Sub-object, Line'
       iv_act = c_action-sort_1
       )->add(
-      iv_txt = 'By Object, Sub-object, Line'
+      iv_txt = 'By Object, Check, Sub-object'
       iv_act = c_action-sort_2
       )->add(
       iv_txt = 'By Check, Object, Sub-object'
@@ -275,6 +276,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       INSERT ls_issue INTO TABLE rt_issues.
 
     ENDLOOP.
+
+    SORT rt_issues BY obj_type obj_name obj_subtype line url title.
 
   ENDMETHOD.
 

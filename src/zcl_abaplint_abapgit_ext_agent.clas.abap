@@ -8,7 +8,8 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
 
   PUBLIC SECTION.
 
-    CONSTANTS c_max_annotations TYPE i VALUE 100. "max without paging
+    " Maximum number of annotations available by API without paging
+    CONSTANTS c_max_annotations TYPE i VALUE 100.
 
     CLASS-METHODS get_instance
       IMPORTING

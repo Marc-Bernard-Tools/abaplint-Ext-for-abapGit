@@ -241,9 +241,10 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
   METHOD _get_issue_fugr.
 
     DATA:
-      lt_functab   TYPE ty_functab,
-      lv_namespace TYPE rs38l-namespace,
-      lv_area      TYPE rs38l-area.
+      lt_functab       TYPE ty_functab,
+      lv_namespace     TYPE rs38l-namespace,
+      lv_complete_area TYPE rs38l-area,
+      lv_area          TYPE rs38l-area.
 
     FIELD-SYMBOLS <ls_functab> TYPE LINE OF ty_functab.
 
@@ -259,14 +260,26 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
     ENDIF.
 
     IF rs_issue-program IS INITIAL.
+      lv_complete_area = |{ is_issue-obj_name }|.
       CALL FUNCTION 'FUNCTION_INCLUDE_SPLIT'
         EXPORTING
-          complete_area = |{ is_issue-obj_name }|
+          complete_area                = lv_complete_area
         IMPORTING
-          namespace     = lv_namespace
-          group         = lv_area
+          namespace                    = lv_namespace
+          group                        = lv_area
         EXCEPTIONS
-          OTHERS        = 6.
+          include_not_exists           = 1
+          group_not_exists             = 2
+          no_selections                = 3
+          no_function_include          = 4
+          no_function_pool             = 5
+          delimiter_wrong_position     = 6
+          no_customer_function_group   = 7
+          no_customer_function_include = 8
+          reserved_name_customer       = 9
+          namespace_too_long           = 10
+          area_length_error            = 11
+          OTHERS                       = 12.
       CONCATENATE lv_namespace 'SAPL' lv_area INTO rs_issue-program.
     ENDIF.
 
@@ -279,7 +292,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
     MOVE-CORRESPONDING is_issue TO rs_issue.
 
-    rs_issue-program = cl_oo_classname_service=>get_interfacepool_name( |{ is_issue-obj_name }| ).
+    rs_issue-program = cl_oo_classname_service=>get_intfsec_name( |{ is_issue-obj_name }| ).
     rs_issue-source = _read_program( rs_issue-program ).
 
   ENDMETHOD.
