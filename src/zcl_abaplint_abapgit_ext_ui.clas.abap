@@ -137,8 +137,11 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD zif_abapgit_gui_event_handler~on_event.
 
     DATA:
-      lv_program TYPE progname,
-      lv_line    TYPE i.
+      lv_jump_type TYPE tadir-object,
+      lv_jump_name TYPE tadir-obj_name,
+      lv_include   TYPE progname,
+      lv_line      TYPE i,
+      lv_position  TYPE string.
 
     CASE ii_event->mv_action.
       WHEN c_action-go_back.
@@ -153,16 +156,22 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
       WHEN c_action-jump_edit.
 
-        lv_program = ii_event->query( )->get( 'PROGRAM' ).
-        lv_line    = ii_event->query( )->get( 'LINE' ).
+        lv_jump_type = ii_event->query( )->get( 'TYPE' ).
+        lv_jump_name = ii_event->query( )->get( 'NAME' ).
+
+        IF lv_jump_type = 'PROG'.
+          lv_include = lv_jump_name.
+          lv_line = ii_event->query( )->get( 'LINE' ).
+          lv_position = nmax( val1 = 1 val2 = lv_line ).
+        ENDIF.
 
         CALL FUNCTION 'RS_TOOL_ACCESS'
           EXPORTING
             operation           = 'EDIT'
-            object_name         = lv_program
-            object_type         = 'PROG'
-            include             = lv_program
-            position            = lv_line
+            object_name         = lv_jump_name
+            object_type         = lv_jump_type
+            include             = lv_include
+            position            = lv_position
             in_new_window       = abap_false
           EXCEPTIONS
             not_executed        = 1
@@ -344,15 +353,17 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD _render_issue.
 
     DATA:
-      ls_mtdkey   TYPE seocpdkey,
-      lv_class    TYPE string,
-      lv_icon     TYPE string,
-      lv_obj_text TYPE string,
-      lv_obj_link TYPE string,
-      lv_msg_text TYPE string,
-      lv_msg_link TYPE string,
-      lv_msg_code TYPE string,
-      lv_rest     TYPE string.
+      ls_mtdkey    TYPE seocpdkey,
+      lv_class     TYPE string,
+      lv_icon      TYPE string,
+      lv_jump_type TYPE tadir-object,
+      lv_jump_name TYPE tadir-obj_name,
+      lv_obj_text  TYPE string,
+      lv_obj_link  TYPE string,
+      lv_msg_text  TYPE string,
+      lv_msg_link  TYPE string,
+      lv_msg_code  TYPE string,
+      lv_rest      TYPE string.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
@@ -370,6 +381,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       WHEN OTHERS.
         lv_class = 'ci-info'.
     ENDCASE.
+
+    " Default jump is to source
+    lv_jump_type = 'PROG'.
+    lv_jump_name = is_issue-program.
 
     CASE is_issue-obj_type.
       WHEN 'CLAS'.
@@ -402,6 +417,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         lv_obj_text = |FUGR { is_issue-obj_name } { is_issue-obj_subtype }|.
       WHEN OTHERS.
         lv_obj_text = |{ is_issue-obj_type } { is_issue-obj_name }|.
+        lv_jump_type = is_issue-obj_type.
+        lv_jump_name = is_issue-obj_name.
     ENDCASE.
 
     lv_msg_text = escape(
@@ -418,7 +435,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_class = 'url' ).
 
     lv_obj_text = |{ lv_obj_text } [ @{ is_issue-line } ]|.
-    lv_obj_link = |{ c_action-jump_edit }?program={ is_issue-program }&line={ is_issue-line }|.
+    lv_obj_link = |{ c_action-jump_edit }?type={ lv_jump_type }&name={ lv_jump_name }&line={ is_issue-line }|.
 
     ri_html->add( |<li class="{ lv_class }">| ).
     ri_html->add_a(
