@@ -162,7 +162,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         IF lv_jump_type = 'PROG'.
           lv_include = lv_jump_name.
           lv_line = ii_event->query( )->get( 'LINE' ).
-          lv_position = nmax( val1 = 1 val2 = lv_line ).
+          lv_position = nmax( val1 = 1
+                              val2 = lv_line ).
         ENDIF.
 
         CALL FUNCTION 'RS_TOOL_ACCESS'
