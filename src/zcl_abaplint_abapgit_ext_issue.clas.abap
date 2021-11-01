@@ -171,10 +171,8 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
         rs_issue = _get_issue_fugr( ms_issue ).
       WHEN 'TYPE'.
         rs_issue = _get_issue_type( ms_issue ).
-      WHEN 'DOMA' OR 'DTEL' OR 'TABL' OR 'TTYP'.
-        MOVE-CORRESPONDING ms_issue TO rs_issue.
       WHEN OTHERS.
-        zcx_abapgit_exception=>raise( |Object type { ms_issue-obj_type } is not supported| ).
+        MOVE-CORRESPONDING ms_issue TO rs_issue.
     ENDCASE.
 
     IF rs_issue-extension = 'XML'.

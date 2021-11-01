@@ -166,6 +166,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
                               val2 = lv_line ).
         ENDIF.
 
+        " We could use zcl_abapgit_objects=>jump but we want to stay in same window
         CALL FUNCTION 'RS_TOOL_ACCESS'
           EXPORTING
             operation           = 'EDIT'
