@@ -1,15 +1,14 @@
 CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
   PUBLIC
   FINAL
-  CREATE PRIVATE .
+  CREATE PRIVATE.
 
   " Calling Github API for check runs and annotations
   " https://docs.github.com/en/rest/reference/checks
-
   PUBLIC SECTION.
 
     " Maximum number of annotations available by API without paging
-    CONSTANTS c_max_annotations TYPE i VALUE 100.
+    CONSTANTS c_max_annotations TYPE i VALUE 50 ##NO_TEXT.
 
     CLASS-METHODS get_instance
       IMPORTING
@@ -17,12 +16,12 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_agent
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS constructor
       IMPORTING
         !iv_url TYPE string
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS get_annotations
       IMPORTING
         !iv_check_run  TYPE string
@@ -30,7 +29,7 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
         VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abapgit_exception
-        zcx_abapgit_ajson_error .
+        zcx_abapgit_ajson_error.
     METHODS get_check_runs
       IMPORTING
         !iv_commit     TYPE zif_abapgit_definitions=>ty_sha1
@@ -38,7 +37,7 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
         VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abapgit_exception
-        zcx_abapgit_ajson_error .
+        zcx_abapgit_ajson_error.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -95,7 +94,7 @@ CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
 
     DATA lv_url TYPE string.
 
-    " Get first 100 annotations which is the current max before paging (default = 30)
+    " Get first 50 annotations which is the current max before paging (default = 30)
     lv_url = mv_url && |/check-runs/{ iv_check_run }/annotations?per_page={ c_max_annotations }|.
 
     ri_json = mo_agent->request( lv_url )->json( ).

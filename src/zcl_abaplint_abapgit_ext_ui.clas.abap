@@ -2,27 +2,29 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
   PUBLIC
   INHERITING FROM zcl_abapgit_gui_component
   FINAL
-  CREATE PRIVATE .
+  CREATE PRIVATE.
 
   PUBLIC SECTION.
 
-    INTERFACES zif_abapgit_gui_event_handler .
-    INTERFACES zif_abapgit_gui_renderable .
+    INTERFACES zif_abapgit_gui_event_handler.
+    INTERFACES zif_abapgit_gui_renderable.
 
     CLASS-METHODS create
       IMPORTING
-        !iv_key        TYPE zif_abapgit_persistence=>ty_repo-key
-        !iv_check_run  TYPE string
+        !iv_key         TYPE zif_abapgit_persistence=>ty_repo-key
+        !iv_check_run   TYPE string
+        !iv_count_total TYPE string
       RETURNING
-        VALUE(ri_page) TYPE REF TO zif_abapgit_gui_renderable
+        VALUE(ri_page)  TYPE REF TO zif_abapgit_gui_renderable
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS constructor
       IMPORTING
-        !iv_key       TYPE zif_abapgit_persistence=>ty_repo-key OPTIONAL
-        !iv_check_run TYPE string OPTIONAL
+        !iv_key         TYPE zif_abapgit_persistence=>ty_repo-key OPTIONAL
+        !iv_check_run   TYPE string OPTIONAL
+        !iv_count_total TYPE string
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -34,52 +36,58 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         sort_3             TYPE string VALUE 'sort_3',
         jump_edit          TYPE string VALUE 'jump_edit',
         toggle_view_source TYPE string VALUE 'toggle_view_source',
-      END OF c_action .
+      END OF c_action.
     CONSTANTS c_lines_before TYPE i VALUE 5.
     CONSTANTS c_lines_after TYPE i VALUE 5.
     CONSTANTS c_logo TYPE string VALUE 'abaplint_logo.png' ##NO_TEXT.
-    CLASS-DATA gv_view_source TYPE abap_bool .
-    DATA mo_repo TYPE REF TO zcl_abapgit_repo_online .
-    DATA mv_check_run TYPE string .
-    DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues .
+    CLASS-DATA gv_view_source TYPE abap_bool.
+    DATA mo_repo TYPE REF TO zcl_abapgit_repo_online.
+    DATA mv_check_run TYPE string.
+    DATA mv_count_total TYPE i.
+    DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues.
 
     CLASS-METHODS _build_menu
       RETURNING
-        VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar .
+        VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar.
     METHODS _get_issues
       RETURNING
         VALUE(rt_issues) TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS _get_logo
       IMPORTING
         !iv_title      TYPE string OPTIONAL
       RETURNING
-        VALUE(rv_html) TYPE string .
+        VALUE(rv_html) TYPE string.
     METHODS _get_mime
       IMPORTING
         !iv_mime_name   TYPE csequence
       RETURNING
         VALUE(rv_xdata) TYPE xstring
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+    METHODS _render_footer
+      RETURNING
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html
+      RAISING
+        zcx_abapgit_exception.
     METHODS _render_issue
       IMPORTING
         !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS _render_issues
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS _render_source
       IMPORTING
         !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
       RETURNING
-        VALUE(ri_html) TYPE REF TO zif_abapgit_html .
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html.
 ENDCLASS.
 
 
@@ -100,7 +108,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     IF iv_check_run IS INITIAL.
       zcx_abapgit_exception=>raise( 'No check run supplied' ).
     ELSE.
-      mv_check_run = iv_check_run.
+      mv_check_run   = iv_check_run.
+      mv_count_total = iv_count_total.
     ENDIF.
 
     mt_issues = _get_issues( ).
@@ -123,8 +132,9 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     CREATE OBJECT lo_component
       EXPORTING
-        iv_key       = iv_key
-        iv_check_run = iv_check_run.
+        iv_key         = iv_key
+        iv_check_run   = iv_check_run
+        iv_count_total = iv_count_total.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'abaplint Issues'
@@ -216,6 +226,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     ri_html->add( `</div>` ).
 
     ri_html->add( _render_issues( ) ).
+
+    ri_html->add( _render_footer( ) ).
 
   ENDMETHOD.
 
@@ -352,6 +364,36 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD _render_footer.
+
+    DATA lv_url TYPE string.
+
+    lv_url = zcl_abaplint_abapgit_ext_exit=>get_instance( )->get_last_url( ).
+
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+
+    IF lines( mt_issues ) = 0.
+
+      ri_html->add( '<div class="dummydiv success">' ).
+      ri_html->add( ri_html->icon( 'check' ) ).
+      ri_html->add( 'No abaplint findings' ).
+      ri_html->add( '</div>' ).
+
+    ELSEIF lines( mt_issues ) < mv_count_total.
+
+      ri_html->add( '<div class="dummydiv warning">' ).
+      ri_html->add( ri_html->icon( 'exclamation-triangle' ) ).
+      ri_html->add( |First { lines( mt_issues ) } of { mv_count_total } findings shown in list. | ).
+      ri_html->add_a(
+        iv_txt  = 'Show more...'
+        iv_act  = |{ zif_abapgit_definitions=>c_action-url }?url={ lv_url }| ).
+      ri_html->add( '</div>' ).
+
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD _render_issue.
 
     DATA:
@@ -457,40 +499,19 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
   METHOD _render_issues.
 
-    DATA:
-      ls_issue LIKE LINE OF mt_issues,
-      lv_max   TYPE i,
-      lv_url   TYPE string.
-
-    lv_max = zcl_abaplint_abapgit_ext_agent=>c_max_annotations.
+    DATA ls_issue LIKE LINE OF mt_issues.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="ci-result"><ul>' ).
 
-    LOOP AT mt_issues INTO ls_issue TO lv_max.
+    LOOP AT mt_issues INTO ls_issue.
 
       ri_html->add( _render_issue( ls_issue ) ).
 
     ENDLOOP.
 
     ri_html->add( '</ul></div>' ).
-
-    IF lines( mt_issues ) = 0.
-      ri_html->add( '<div class="dummydiv success">' ).
-      ri_html->add( ri_html->icon( 'check' ) ).
-      ri_html->add( 'No abaplint findings' ).
-      ri_html->add( '</div>' ).
-    ELSEIF lines( mt_issues ) > lv_max.
-      lv_url = zcl_abaplint_abapgit_ext_exit=>get_instance( )->get_last_url( ).
-      ri_html->add( '<div class="dummydiv warning">' ).
-      ri_html->add( ri_html->icon( 'exclamation-triangle' ) ).
-      ri_html->add( |Only first { lv_max } findings shown in list.| ).
-      ri_html->add_a(
-        iv_txt  = 'Show more...'
-        iv_act  = |{ zif_abapgit_definitions=>c_action-url }?url={ lv_url }| ).
-      ri_html->add( '</div>' ).
-    ENDIF.
 
   ENDMETHOD.
 

@@ -7,14 +7,15 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
 
     TYPES:
       BEGIN OF ty_check_run,
-        app        TYPE string,
-        status     TYPE string,
-        conclusion TYPE string,
-        name       TYPE string,
-        id         TYPE string,
-        url        TYPE string,
-        summary    TYPE string,
-        count      TYPE i,
+        app         TYPE string,
+        status      TYPE string,
+        conclusion  TYPE string,
+        name        TYPE string,
+        id          TYPE string,
+        url         TYPE string,
+        summary     TYPE string,
+        count_shown TYPE i,
+        count_total TYPE i,
       END OF ty_check_run.
 
     METHODS constructor
@@ -28,7 +29,6 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
         VALUE(rs_check_run) TYPE ty_check_run
       RAISING
         zcx_abapgit_exception .
-
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -56,6 +56,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
       lt_check_runs TYPE TABLE OF string,
       lv_check_run  TYPE string,
       lv_msg        TYPE string,
+      lv_count      TYPE string,
       lv_app        TYPE string,
       lv_name       TYPE string.
 
@@ -72,20 +73,23 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
 
         LOOP AT lt_check_runs INTO lv_check_run.
 
-          lv_app = li_json->get( |/check_runs/{ lv_check_run }/app/name| ).
+          lv_app  = li_json->get( |/check_runs/{ lv_check_run }/app/name| ).
           lv_name = li_json->get( |/check_runs/{ lv_check_run }/name| ).
 
           " Only interested in abaplint run (not builds or abalint/observations)
           IF lv_app = 'abaplint' AND lv_name = 'abaplint'.
 
-            rs_check_run-app        = lv_app.
-            rs_check_run-name       = lv_name.
-            rs_check_run-id         = li_json->get( |/check_runs/{ lv_check_run }/id| ).
-            rs_check_run-status     = li_json->get( |/check_runs/{ lv_check_run }/status| ).
-            rs_check_run-conclusion = li_json->get( |/check_runs/{ lv_check_run }/conclusion| ).
-            rs_check_run-url        = li_json->get( |/check_runs/{ lv_check_run }/html_url| ).
-            rs_check_run-summary    = li_json->get( |/check_runs/{ lv_check_run }/output/summary| ).
-            rs_check_run-count      = li_json->get( |/check_runs/{ lv_check_run }/output/annotation_count| ).
+            rs_check_run-app         = lv_app.
+            rs_check_run-name        = lv_name.
+            rs_check_run-id          = li_json->get( |/check_runs/{ lv_check_run }/id| ).
+            rs_check_run-status      = li_json->get( |/check_runs/{ lv_check_run }/status| ).
+            rs_check_run-conclusion  = li_json->get( |/check_runs/{ lv_check_run }/conclusion| ).
+            rs_check_run-url         = li_json->get( |/check_runs/{ lv_check_run }/html_url| ).
+            rs_check_run-summary     = li_json->get( |/check_runs/{ lv_check_run }/output/summary| ).
+            rs_check_run-count_shown = li_json->get( |/check_runs/{ lv_check_run }/output/annotation_count| ).
+
+            SPLIT rs_check_run-summary AT space INTO lv_count lv_msg.
+            rs_check_run-count_total = lv_count.
 
             REPLACE ALL OCCURRENCES OF
               cl_abap_char_utilities=>newline && cl_abap_char_utilities=>newline

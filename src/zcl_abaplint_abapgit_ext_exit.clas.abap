@@ -83,8 +83,9 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
     IF ii_event->mv_action = c_action-go_abaplint.
       rs_handled-page  = zcl_abaplint_abapgit_ext_ui=>create(
-        iv_key       = |{ ii_event->query( )->get( 'KEY' ) }|
-        iv_check_run = |{ ii_event->query( )->get( 'CHECKRUN' ) }| ).
+        iv_key         = |{ ii_event->query( )->get( 'KEY' ) }|
+        iv_check_run   = |{ ii_event->query( )->get( 'CHECKRUN' ) }|
+        iv_count_total = |{ ii_event->query( )->get( 'TOTAL' ) }| ).
       rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
     ENDIF.
 
@@ -162,8 +163,11 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
   METHOD _wall_message_abaplint.
 
     DATA:
+      lv_act     TYPE string,
       lv_msg     TYPE string,
       lv_summary TYPE string.
+
+    lv_act = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }|.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
@@ -172,39 +176,39 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     CASE is_check_run-status.
       WHEN c_git_status-queued.
         ri_html->add_a(
-          iv_txt  = zcl_abapgit_html=>icon(
-            iv_name = 'circle-solid'
-            iv_hint = is_check_run-status )
-          iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
+          iv_txt = zcl_abapgit_html=>icon(
+                     iv_name = 'circle-solid'
+                     iv_hint = is_check_run-status )
+          iv_act = lv_act ).
       WHEN c_git_status-in_progress.
         ri_html->add_a(
-          iv_txt  = zcl_abapgit_html=>icon(
-            iv_name  = 'circle-solid'
-            iv_class = 'warning'
-            iv_hint  = is_check_run-status )
-          iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
+          iv_txt = zcl_abapgit_html=>icon(
+                     iv_name  = 'circle-solid'
+                     iv_class = 'warning'
+                     iv_hint  = is_check_run-status )
+          iv_act = lv_act ).
       WHEN c_git_status-completed.
         CASE is_check_run-conclusion.
           WHEN c_git_conclusion-neutral.
             ri_html->add_a(
-              iv_txt  = zcl_abapgit_html=>icon(
-                iv_name = 'circle-solid'
-                iv_hint = is_check_run-conclusion )
-              iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
+              iv_txt = zcl_abapgit_html=>icon(
+                         iv_name = 'circle-solid'
+                         iv_hint = is_check_run-conclusion )
+              iv_act = lv_act ).
           WHEN c_git_conclusion-success.
             ri_html->add_a(
-              iv_txt  = zcl_abapgit_html=>icon(
-                iv_name  = 'check'
-                iv_class = 'success'
-                iv_hint  = is_check_run-conclusion )
-              iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
+              iv_txt = zcl_abapgit_html=>icon(
+                         iv_name  = 'check'
+                         iv_class = 'success'
+                         iv_hint  = is_check_run-conclusion )
+              iv_act = lv_act ).
           WHEN c_git_conclusion-failure.
             ri_html->add_a(
               iv_txt  = zcl_abapgit_html=>icon(
-                iv_name  = 'times-solid'
-                iv_class = 'error'
-                iv_hint  = is_check_run-conclusion )
-              iv_act   = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }| ).
+                         iv_name  = 'times-solid'
+                         iv_class = 'error'
+                         iv_hint  = is_check_run-conclusion )
+              iv_act = lv_act ).
           WHEN OTHERS.
             ri_html->add( |Unexpected value "{ is_check_run-conclusion }" for "conclusion"| ).
         ENDCASE.
@@ -221,10 +225,13 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     IF lv_summary IS NOT INITIAL.
       REPLACE 'First 50 annotations shown, ' IN lv_summary WITH ''.
 
+      lv_act = |{ c_action-go_abaplint }?| &&
+               |key={ iv_key }&checkrun={ is_check_run-id }&total={ is_check_run-count_total }|.
+
       " todo, maybe better to show link only for failures
       lv_summary = ri_html->a(
         iv_txt = lv_summary
-        iv_act = |{ c_action-go_abaplint }?key={ iv_key }&checkrun={ is_check_run-id }| ).
+        iv_act = lv_act ).
 
       lv_msg = |{ lv_msg }: { lv_summary }|.
     ENDIF.
