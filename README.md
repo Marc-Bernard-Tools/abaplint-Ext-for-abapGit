@@ -20,29 +20,29 @@ This repository provides an extension for abapGit integrating the abaplint resul
 
 Under the name of the repository, the status and summary of the last abaplint check will be displayed. 
 
-![img/check_success.png]
+![check1](img/check_success.png)
 
-![img/check_in_progress.png]
+![check2](img/check_in_progress.png)
 
-![img/check_failure.png]
+![check3](img/check_failure.png)
 
 You can click on the status icon to open the corresponding page on GitHub. If you click on the result summary, the detailed findings will be shown.
 
-![img/github_1.png]
+![github1](img/github_1.png)
 
 ### Issue View
 
 The issues are listed similarly to syntax and ATC checks in abapGit. For each finding, the view shows the object type, name, and line number. Below, it prints the abaplint message. A link on the error code opens the corresponding definition on [rules.abaplint.org](https://rules.abaplint.org/). 
 
-![img/findings_error_1.png]
+![findings1](img/findings_error_1.png)
 
 Optionally, you can sort the results by object, location, or error code. You can also hide the source code preview.
 
-![img/findings_error_2.png]
+![findings1](img/findings_error_2.png)
 
 Here are the corresponding findings in GitHub.
 
-![img/github_2.png]
+![github1](img/github_2.png)
 
 ## Installation
 
