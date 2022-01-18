@@ -1,8 +1,8 @@
 ![abap package version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zabap_syntax_message_fixer.prog.abap/c_version&label=version&color=darkgray)
 
-# ABAP Lint Extension for abapGit
+# abaplint Extension for abapGit
 
-View abaplint results and detailed findings directly in abapGit. 
+View [abaplint](https://abaplint.org/) results and detailed findings directly in [abapGit](https://github.com/abapGit/abapGit). 
 
 Made by [Marc Bernard Tools](https://marcbernardtools.com/) giving back to the [SAP Community](https://community.sap.com/)
 
