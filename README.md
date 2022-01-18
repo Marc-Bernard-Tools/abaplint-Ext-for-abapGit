@@ -16,7 +16,33 @@ After committing changes from abapGit to you repository, you have to switch to a
 
 This repository provides an extension for abapGit integrating the abaplint results (as [user exits](https://docs.abapgit.org/ref-exits.html)). A summary of the results is displayed in the abapGit repository view and details are shown on a separate page with a code preview and an option to jump directly to the code in question. 
 
-**TODO screenshots**
+### Repository View
+
+Under the name of the repository, the status and summary of the last abaplint check will be displayed. 
+
+![img/check_success.png]
+
+![img/check_in_progress.png]
+
+![img/check_failure.png]
+
+You can click on the status icon to open the corresponding page on GitHub. If you click on the result summary, the detailed findings will be shown.
+
+![img/github_1.png]
+
+### Issue View
+
+The issues are listed similarly to syntax and ATC checks in abapGit. For each finding, the view shows the object type, name, and line number. Below, it prints the abaplint message. A link on the error code opens the corresponding definition on [rules.abaplint.org](https://rules.abaplint.org/). 
+
+![img/findings_error_1.png]
+
+Optionally, you can sort the results by object, location, or error code. You can also hide the source code preview.
+
+![img/findings_error_2.png]
+
+Here are the corresponding findings in GitHub.
+
+![img/github_2.png]
 
 ## Installation
 
@@ -29,11 +55,21 @@ You can install the repository using [abapGit](https://github.com/abapGit/abapGi
 Implement abapGit user exits [`wall_message_repo`](https://docs.abapgit.org/ref-exits.html#wall_message_repo) and [`on_event`](https://docs.abapgit.org/ref-exits.html#on_event) as follows:
 
 ```abap
-wall_message_repo
+  METHOD zif_abapgit_exit~wall_message_repo.
+
+    zcl_abaplint_abapgit_ext_exit=>get_instance( )->wall_message_repo(
+      is_repo_meta = is_repo_meta
+      ii_html      = ii_html ).
+
+  ENDMETHOD.
 ```
 
 ```abap
-on_event
+  METHOD zif_abapgit_exit~on_event.
+
+    rs_handled = zcl_abaplint_abapgit_ext_exit=>get_instance( )->on_event( ii_event ).
+
+  ENDMETHOD.
 ```
 
 ## Contributions
