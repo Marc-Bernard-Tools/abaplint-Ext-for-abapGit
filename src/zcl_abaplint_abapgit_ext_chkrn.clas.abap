@@ -3,6 +3,8 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
   FINAL
   CREATE PUBLIC .
 
+* GitHub REST API for Checks - Check Run
+* https://docs.github.com/en/rest/reference/checks
   PUBLIC SECTION.
 
     TYPES:

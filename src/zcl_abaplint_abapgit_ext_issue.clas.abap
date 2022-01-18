@@ -3,6 +3,7 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
   FINAL
   CREATE PUBLIC .
 
+* Derive abapGit issue from abaplint annotation
   PUBLIC SECTION.
 
     TYPES:

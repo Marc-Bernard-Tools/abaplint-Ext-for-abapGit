@@ -1,12 +1,15 @@
 CLASS zcl_abaplint_abapgit_ext_annot DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC .
+  CREATE PUBLIC.
 
+* GitHub REST API for Checks - Annotation
+* https://docs.github.com/en/rest/reference/checks
   PUBLIC SECTION.
 
     TYPES:
 * Example:
+*   {
 *     "path": "src/dev/zcl_abapinst_installer.clas.abap",
 *     "blob_href": "https://github.com/Marc-Bernard-Tools/ABAP-Installer/blob/
 *       95990d129bf6e29701917804c4d2e9f93a701f2f/src/dev/zcl_abapinst_installer.clas.abap",
@@ -18,6 +21,7 @@ CLASS zcl_abaplint_abapgit_ext_annot DEFINITION
 *     "title": "Not a structure, type unknown, FieldChain",
 *     "message": "https://rules.abaplint.org/check_syntax",
 *     "raw_details": null
+*   }
       BEGIN OF ty_annotation,
         path             TYPE string,
         blob_href        TYPE string,
@@ -29,20 +33,21 @@ CLASS zcl_abaplint_abapgit_ext_annot DEFINITION
         title            TYPE string,
         message          TYPE string,
         raw_details      TYPE string,
-      END OF ty_annotation .
-    TYPES ty_annotations TYPE STANDARD TABLE OF ty_annotation WITH DEFAULT KEY.
+      END OF ty_annotation.
+    TYPES:
+      ty_annotations TYPE STANDARD TABLE OF ty_annotation WITH DEFAULT KEY.
 
     METHODS constructor
       IMPORTING
         !iv_url       TYPE string
         !iv_check_run TYPE string
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS get
       RETURNING
         VALUE(rt_annotations) TYPE ty_annotations
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
 

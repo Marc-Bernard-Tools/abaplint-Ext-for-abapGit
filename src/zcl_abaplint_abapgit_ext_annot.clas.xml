@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPLINT_ABAPGIT_EXT_ANNOT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abaplint - Extension for abapGit (Annotations)</DESCRIPT>
+    <DESCRIPT>abaplint - Extension for abapGit (Annotation)</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

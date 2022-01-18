@@ -1,24 +1,26 @@
 CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
   PUBLIC
   FINAL
-  CREATE PRIVATE .
+  CREATE PRIVATE.
 
   PUBLIC SECTION.
 
+    CONSTANTS c_version TYPE string VALUE '1.0.0'.
+
     CLASS-METHODS get_instance
       RETURNING
-        VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_exit .
+        VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_exit.
     METHODS on_event
       IMPORTING
         !ii_event         TYPE REF TO zif_abapgit_gui_event
       RETURNING
         VALUE(rs_handled) TYPE zif_abapgit_gui_event_handler=>ty_handling_result
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
     METHODS wall_message_repo
       IMPORTING
         !is_repo_meta TYPE zif_abapgit_persistence=>ty_repo
-        !ii_html      TYPE REF TO zif_abapgit_html .
+        !ii_html      TYPE REF TO zif_abapgit_html.
     METHODS get_last_url
       RETURNING
         VALUE(rv_url) TYPE string.
@@ -30,27 +32,27 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
         commit TYPE string,
         html   TYPE REF TO zif_abapgit_html,
         url    TYPE string,
-      END OF ty_wall .
+      END OF ty_wall.
 
     CONSTANTS:
       BEGIN OF c_action,
         go_abaplint TYPE string VALUE 'go_abaplint',
-      END OF c_action .
+      END OF c_action.
     CONSTANTS:
       BEGIN OF c_git_status,
         queued      TYPE string VALUE 'queued',
         in_progress TYPE string VALUE 'in_progress',
         completed   TYPE string VALUE 'completed',
-      END OF c_git_status .
+      END OF c_git_status.
     CONSTANTS:
       BEGIN OF c_git_conclusion,
         neutral TYPE string VALUE 'neutral',
         success TYPE string VALUE 'success',
         failure TYPE string VALUE 'failure',
-      END OF c_git_conclusion .
+      END OF c_git_conclusion.
     CLASS-DATA go_instance TYPE REF TO zcl_abaplint_abapgit_ext_exit.
     DATA:
-      mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit .
+      mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit.
     DATA mv_last_url TYPE string.
 
     METHODS _wall_message_abaplint
@@ -58,7 +60,7 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
         !iv_key        TYPE zif_abapgit_persistence=>ty_repo-key
         !is_check_run  TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run
       RETURNING
-        VALUE(ri_html) TYPE REF TO zif_abapgit_html .
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html.
 ENDCLASS.
 
 
