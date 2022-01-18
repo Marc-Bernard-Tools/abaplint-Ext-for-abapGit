@@ -30,7 +30,7 @@ Under the name of the repository, the status and summary of the last abaplint ch
 
 ![check3](img/check_failure.png)
 
-You can click on the status icon to open the corresponding page on GitHub. If you click on the result summary, the detailed findings will be shown.
+You can click on the status icon to open the corresponding page on GitHub. If you click on the result summary, the detailed issues will be shown.
 
 ### Issue View
 
