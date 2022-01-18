@@ -12,8 +12,6 @@ NO WARRANTIES, [MIT License](LICENSE)
 
 After committing changes from abapGit to you repository, you have to switch to another tool to view the abaplint results. If the abaplint check fails, the detailed findings are hard to process since they don't link back to you SAP system where you want to fix the issues.
 
-Note: Using VSCode with several ABAP extensions might alleviate these issues but then you are not using abapGit in the first place. 
-
 ## The Solution
 
 This repository provides an extension for abapGit integrating the abaplint results (as [user exits](https://docs.abapgit.org/ref-exits.html)). A summary of the results is displayed in the abapGit repository view and details are shown on a separate page with a code preview and an option to jump directly to the code in question. 
