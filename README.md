@@ -14,6 +14,8 @@ After committing changes from abapGit to you repository, you have to switch to G
 
 ![github2](img/github_2.png)
 
+Note: VSCode with [abaplint extension](https://marketplace.visualstudio.com/items?itemName=larshp.vscode-abaplint) is an exception. But then you are not using abapGit in the first place.
+
 ## The Solution
 
 This repository provides an extension for abapGit integrating the abaplint results (as [user exits](https://docs.abapgit.org/ref-exits.html)). A summary of the results is displayed in the abapGit repository view and details are shown on a separate page with a code preview and an option to jump directly to the code in question. 
