@@ -10,7 +10,11 @@ NO WARRANTIES, [MIT License](LICENSE)
 
 ## The Problem
 
-After committing changes from abapGit to you repository, you have to switch to another tool to view the abaplint results. If the abaplint check fails, the detailed findings are hard to process since they don't link back to you SAP system where you want to fix the issues.
+After committing changes from abapGit to you repository, you have to switch to GitHub or another tool to view the abaplint results. If the abaplint check fails, the detailed findings are hard to process since they don't link back to you SAP system where you want to fix the issues.
+
+![github1](img/github_1.png)
+
+![github2](img/github_2.png)
 
 ## The Solution
 
@@ -28,8 +32,6 @@ Under the name of the repository, the status and summary of the last abaplint ch
 
 You can click on the status icon to open the corresponding page on GitHub. If you click on the result summary, the detailed findings will be shown.
 
-![github1](img/github_1.png)
-
 ### Issue View
 
 The issues are listed similarly to syntax and ATC checks in abapGit. For each finding, the view shows the object type, name, and line number. Below, it prints the abaplint message. A link on the error code opens the corresponding definition on [rules.abaplint.org](https://rules.abaplint.org/). 
@@ -41,8 +43,6 @@ Optionally, you can sort the results by object, location, or error code. You can
 ![findings1](img/findings_error_2.png)
 
 Here are the corresponding findings in GitHub.
-
-![github1](img/github_2.png)
 
 ## Installation
 
