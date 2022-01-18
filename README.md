@@ -1,4 +1,4 @@
-![abap package version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zabap_syntax_message_fixer.prog.abap/c_version&label=version&color=darkgray)
+![abap package version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zcl_abaplint_abapgit_ext_exit.clas.abap/c_version&label=version&color=darkgray)
 
 # abaplint Extension for abapGit
 
