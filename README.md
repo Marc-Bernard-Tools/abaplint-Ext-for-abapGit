@@ -42,8 +42,6 @@ Optionally, you can sort the results by object, location, or error code. You can
 
 ![findings1](img/findings_error_2.png)
 
-Here are the corresponding findings in GitHub.
-
 ## Installation
 
 ### Repository
