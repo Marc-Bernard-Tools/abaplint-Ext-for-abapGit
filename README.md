@@ -10,11 +10,11 @@ NO WARRANTIES, [MIT License](LICENSE)
 
 ## The Problem
 
-After committing changes from abapGit to you repository, you have to switch to GitHub or another tool to view the abaplint results. If the abaplint check fails, the detailed findings are hard to process since they don't link back to you SAP system where you want to fix the issues.
+After committing changes from abapGit to your repository and running abaplint there, you have to switch to GitHub or another tool to view the abaplint results. If the abaplint check fails, the detailed findings are hard to process since they don't link back to your SAP system where you want to fix the issues.
 
 ![github2](img/github_2.png)
 
-Note: VSCode with [abaplint extension](https://marketplace.visualstudio.com/items?itemName=larshp.vscode-abaplint) is an exception. But then you are not using abapGit in the first place.
+Note: VSCode with [abaplint extension](https://marketplace.visualstudio.com/items?itemName=larshp.vscode-abaplint) is an exception showing lint results within your ABAP code. But then you are not using abapGit in the first place.
 
 ## The Solution
 
