@@ -56,7 +56,7 @@ You can install the repository using [abapGit](https://github.com/abapGit/abapGi
 
 ### User Exits
 
-Implement abapGit user exits [`wall_message_repo`](https://docs.abapgit.org/ref-exits.html#wall_message_repo) and [`on_event`](https://docs.abapgit.org/ref-exits.html#on_event) as follows:
+Implement abapGit [user exits](https://docs.abapgit.org/ref-exits.html) [`wall_message_repo`](https://docs.abapgit.org/ref-exits.html#wall_message_repo) and [`on_event`](https://docs.abapgit.org/ref-exits.html#on_event) as follows:
 
 ```abap
   METHOD zif_abapgit_exit~wall_message_repo.
