@@ -1,5 +1,5 @@
-![abap package version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zcl_abaplint_abapgit_ext_exit.clas.abap/c_version&label=version&color=darkgray)
-![abaplint](https://github.com/sbcgua/ajson/workflows/abaplint/badge.svg)
+![abap package version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zcl_abaplint_abapgit_ext_exit.clas.abap/c_version&label=version&color=blue)
+![abaplint](https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/workflows/abaplint/badge.svg)
 
 [![license](https://img.shields.io/github/license/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit?color=green)](LICENSE)
 [![REUSE Status](https://api.reuse.software/badge/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit)](https://api.reuse.software/info/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit)
