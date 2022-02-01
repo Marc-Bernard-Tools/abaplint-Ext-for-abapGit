@@ -1,4 +1,10 @@
 ![abap package version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zcl_abaplint_abapgit_ext_exit.clas.abap/c_version&label=version&color=darkgray)
+![abaplint](https://github.com/sbcgua/ajson/workflows/abaplint/badge.svg)
+
+[![license](https://img.shields.io/github/license/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit?color=green)](LICENSE)
+[![REUSE Status](https://api.reuse.software/badge/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit)](https://api.reuse.software/info/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit)
+[![ClearlyDefined Score](https://img.shields.io/clearlydefined/score/git/github/marc-bernard-tools/ABAP-Lint-Ext-for-abapGit/?label=ClearlyDefined%20Score)](https://clearlydefined.io/definitions/git/github/marc-bernard-tools/ABAP-Lint-Ext-for-abapGit/)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg?color=green)](CODE_OF_CONDUCT.md)
 
 # abaplint Extension for abapGit
 
