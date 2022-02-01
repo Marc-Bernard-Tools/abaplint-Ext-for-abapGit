@@ -1,7 +1,7 @@
-![version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zcl_abaplint_abapgit_ext_exit.clas.abap/c_version&label=version&color=blue)
-![checks](https://img.shields.io/github/checks-status/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/main)
+![Version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/src/zcl_abaplint_abapgit_ext_exit.clas.abap/c_version&label=Version&color=blue)
+![Checks](https://img.shields.io/github/checks-status/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/main&label=Checks)
 
-[![license](https://img.shields.io/github/license/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit?color=green)](LICENSE)
+[![License](https://img.shields.io/github/license/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit?color=green)](LICENSE)
 [![REUSE Status](https://api.reuse.software/badge/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit)](https://api.reuse.software/info/github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit)
 [![ClearlyDefined Score](https://img.shields.io/clearlydefined/score/git/github/marc-bernard-tools/abap-lint-ext-for-abapgit/74a702eadd6ebe0a136575e56c65177d83443fa5?label=ClearlyDefined%20Score)](https://clearlydefined.io/definitions/git/github/marc-bernard-tools/abap-lint-ext-for-abapgit/74a702eadd6ebe0a136575e56c65177d83443fa5)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg?color=green)](CODE_OF_CONDUCT.md)
