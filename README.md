@@ -75,6 +75,10 @@ Implement abapGit [user exits](https://docs.abapgit.org/ref-exits.html) [`wall_m
   ENDMETHOD.
 ```
 
+### SSL and Certificates
+
+The abaplint status is retrieved via `https://api.github.com/`. Therefore, a proper SSL configuration and certificates for `api.github.com` are required. See [SSL setup](https://docs.abapgit.org/guide-ssl-setup.html) for details.
+
 ## Contributions
 
 All contributions are welcome! Just fork this repo and create a pull request. 
