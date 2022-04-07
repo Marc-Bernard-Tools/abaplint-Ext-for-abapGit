@@ -46,9 +46,14 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
       END OF c_git_status.
     CONSTANTS:
       BEGIN OF c_git_conclusion,
-        neutral TYPE string VALUE 'neutral',
-        success TYPE string VALUE 'success',
-        failure TYPE string VALUE 'failure',
+        neutral         TYPE string VALUE 'neutral',
+        success         TYPE string VALUE 'success',
+        failure         TYPE string VALUE 'failure',
+        action_required TYPE string VALUE 'action_required',
+        cancelled       TYPE string VALUE 'cancelled',
+        skipped         TYPE string VALUE 'skipped',
+        stale           TYPE string VALUE 'stale',
+        timed_out       TYPE string VALUE 'timed_out',
       END OF c_git_conclusion.
     CLASS-DATA go_instance TYPE REF TO zcl_abaplint_abapgit_ext_exit.
     DATA:
@@ -204,7 +209,12 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
                          iv_class = 'success'
                          iv_hint  = is_check_run-conclusion )
               iv_act = lv_act ).
-          WHEN c_git_conclusion-failure.
+          WHEN c_git_conclusion-failure
+            OR c_git_conclusion-action_required
+            OR c_git_conclusion-cancelled
+            OR c_git_conclusion-skipped
+            OR c_git_conclusion-stale
+            OR c_git_conclusion-timed_out.
             ri_html->add_a(
               iv_txt  = zcl_abapgit_html=>icon(
                          iv_name  = 'times-solid'
