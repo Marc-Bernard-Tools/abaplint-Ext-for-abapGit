@@ -5,7 +5,7 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
 
   PUBLIC SECTION.
 
-    CONSTANTS c_version TYPE string VALUE '1.1.0'.
+    CONSTANTS c_version TYPE string VALUE '1.1.0' ##NEEDED.
 
     CLASS-METHODS get_instance
       RETURNING
