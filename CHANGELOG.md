@@ -15,6 +15,12 @@ and [ISO Date Format](https://www.iso.org/iso-8601-date-and-time-format.html).
 ### Fixed
 
 
+## Version [1.1.1] - 2022-10-12
+
+### Fixed
+
+- Removed unnecessary text "[adjust installations]..." from wall message
+
 ## Version [1.1.0] - 2022-05-18
 
 ### Fixed
@@ -26,6 +32,7 @@ and [ISO Date Format](https://www.iso.org/iso-8601-date-and-time-format.html).
 Public Release
 
 
-[Unreleased]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.1.0...main
+[Unreleased]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.1.1...main
+[1.1.1]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/releases/tag/1.0.0
