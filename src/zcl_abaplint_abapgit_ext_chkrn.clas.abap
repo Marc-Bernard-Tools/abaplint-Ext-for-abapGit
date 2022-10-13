@@ -95,7 +95,10 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
 
             REPLACE ALL OCCURRENCES OF
               cl_abap_char_utilities=>newline && cl_abap_char_utilities=>newline
-              IN rs_check_run-summary WITH ', '.
+              IN rs_check_run-summary WITH `, `.
+
+            " Remove link to https://github.com/apps/abaplint/installations/new
+            REPLACE REGEX ', [adjust installations].*' IN rs_check_run-summary WITH ''.
 
             EXIT.
 
