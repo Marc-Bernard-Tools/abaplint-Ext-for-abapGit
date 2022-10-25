@@ -70,7 +70,9 @@ Implement abapGit [user exits](https://docs.abapgit.org/ref-exits.html) [`wall_m
 ```abap
   METHOD zif_abapgit_exit~on_event.
 
-    rs_handled = zcl_abaplint_abapgit_ext_exit=>get_instance( )->on_event( ii_event ).
+    IF rs_handled IS INITIAL.
+      rs_handled = zcl_abaplint_abapgit_ext_exit=>get_instance( )->on_event( ii_event ).
+    ENDIF.
 
   ENDMETHOD.
 ```
