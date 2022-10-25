@@ -307,7 +307,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
   METHOD _get_logo.
     rv_html =
-      |<img src="{ c_logo }" width="25px" height-"25px" | &&
+      |<img src="{ c_logo }" width="25px" height="25px" | &&
       |title="{ iv_title }" | &&
       |style="background-color:lightgrey;border-radius:6px;">|.
   ENDMETHOD.

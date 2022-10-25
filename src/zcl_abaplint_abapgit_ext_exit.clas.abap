@@ -170,6 +170,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
   METHOD _wall_message_abaplint.
 
     DATA:
+      lv_style   TYPE string,
       lv_act     TYPE string,
       lv_msg     TYPE string,
       lv_summary TYPE string.
@@ -178,7 +179,9 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
-    ri_html->add( '<div id="abaplint-message" style="margin-top:10px;">' ).
+    lv_style = 'padding-right: 10px; margin-top: 10px; float: left;'.
+
+    ri_html->add( |<div id="abaplint-message" style="{ lv_style }">| ).
 
     CASE is_check_run-status.
       WHEN c_git_status-queued.
