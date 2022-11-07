@@ -707,7 +707,7 @@
       "severity": "Error"
     },
     "remove_descriptions": {
-      "exclude": [],
+      "exclude": [".*"],
       "ignoreExceptions": false,
       "ignoreWorkflow": true,
       "severity": "Error"
