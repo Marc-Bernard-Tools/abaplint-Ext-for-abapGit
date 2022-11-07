@@ -14,9 +14,13 @@
   "global": {
     "exclude": [],
     "files": "/src/**/*.*",
-    "skipGeneratedFunctionGroups": true,
-    "skipGeneratedGatewayClasses": true,
-    "skipGeneratedPersistentClasses": true,
+    "noIssues": [],
+    "skipGeneratedBOPFInterfaces": false,
+    "skipGeneratedFunctionGroups": false,
+    "skipGeneratedGatewayClasses": false,
+    "skipGeneratedPersistentClasses": false,
+    "skipGeneratedProxyClasses": false,
+    "skipGeneratedProxyInterfaces": false,
     "skipIncludesWithoutMain": false,
     "useApackDependencies": false
   },
@@ -27,9 +31,11 @@
     },
     "abapdoc": {
       "checkLocal": false,
+      "classDefinition": false,
       "exclude": [
         ".*"
       ],
+      "interfaceDefinition": false,
       "severity": "Error"
     },
     "allowed_object_naming": {
@@ -56,7 +62,9 @@
       "describeLines": true,
       "exclude": [],
       "severity": "Error",
-      "statics": true
+      "skipQuickFix": false,
+      "statics": true,
+      "testSeams": true
     },
     "begin_end_names": {
       "exclude": [],
@@ -81,6 +89,7 @@
       "move": true,
       "refresh": true,
       "severity": "Error",
+      "sort": true,
       "unassign": true,
       "write": true
     },
@@ -98,10 +107,6 @@
       "severity": "Error"
     },
     "check_include": {
-      "exclude": [],
-      "severity": "Error"
-    },
-    "check_no_handler_pragma": {
       "exclude": [],
       "severity": "Error"
     },
@@ -175,12 +180,13 @@
       "deleteDynpro": true,
       "deleteReport": true,
       "deleteTextpool": true,
+      "dynamicSQL": true,
       "exclude": [],
       "execSQL": true,
+      "exportDynpro": true,
       "generateDynpro": true,
       "generateReport": true,
       "generateSubroutine": true,
-      "importDynpro": true,
       "insertReport": true,
       "kernelCall": true,
       "severity": "Error",
@@ -229,9 +235,12 @@
       "select": true,
       "severity": "Error",
       "try": true,
+      "when": true,
       "while": true
     },
     "exit_or_check": {
+      "allowCheck": false,
+      "allowExit": false,
       "exclude": [],
       "severity": "Error"
     },
@@ -386,6 +395,7 @@
       "severity": "Error"
     },
     "in_statement_indentation": {
+      "blockStatements": 0,
       "exclude": [],
       "ignoreExceptions": true,
       "severity": "Error"
@@ -397,6 +407,7 @@
       "ignoreExceptions": true,
       "ignoreGlobalClassDefinition": false,
       "ignoreGlobalInterface": false,
+      "selectionScreenBlockIndentation": true,
       "severity": "Error"
     },
     "inline_data_old_versions": {
@@ -426,6 +437,7 @@
       "style": "upper"
     },
     "line_break_multiple_parameters": {
+      "count": 1,
       "exclude": [],
       "severity": "Error"
     },
@@ -453,7 +465,7 @@
       "severity": "Error",
       "test": "^LTCL_.+$"
     },
-    "local_testclass_location": {
+    "local_testclass_consistency": {
       "exclude": [],
       "severity": "Error"
     },
@@ -471,7 +483,7 @@
       "exclude": [],
       "severity": "Error"
     },
-    "many_parenthesis": {
+    "many_parentheses": {
       "exclude": [],
       "severity": "Error"
     },
@@ -492,6 +504,7 @@
       "severity": "Error"
     },
     "method_length": {
+      "checkForms": true,
       "errorWhenEmpty": true,
       "exclude": [],
       "ignoreTestClasses": false,
@@ -546,10 +559,12 @@
     "no_public_attributes": {
       "allowReadOnly": false,
       "exclude": [],
+      "ignoreTestClasses": false,
       "severity": "Error"
     },
     "no_yoda_conditions": {
       "exclude": [],
+      "onlyConstants": false,
       "severity": "Error"
     },
     "object_naming": {
@@ -579,23 +594,32 @@
     },
     "obsolete_statement": {
       "add": true,
+      "callTransformation": true,
+      "clientSpecified": true,
       "communication": true,
       "compute": true,
       "divide": true,
       "exclude": [],
+      "exitFromSQL": true,
       "fieldSymbolStructure": true,
+      "formDefinition": true,
+      "formImplementation": true,
+      "freeMemory": true,
       "load": true,
       "move": true,
       "multiply": true,
+      "occurences": true,
       "occurs": true,
       "pack": true,
       "parameter": true,
       "ranges": true,
       "refresh": true,
+      "regex": true,
       "requested": true,
       "selectWithoutInto": true,
       "setExtended": true,
       "severity": "Error",
+      "sortByFS": true,
       "subtract": true,
       "typePools": true,
       "withHeaderLine": true
@@ -684,7 +708,8 @@
       "endSelect": true,
       "exclude": [],
       "selectStar": true,
-      "severity": "Error"
+      "severity": "Error",
+      "starOkayIfFewColumns": 10
     },
     "selection_screen_naming": {
       "exclude": [],
@@ -692,6 +717,7 @@
       "ignorePatterns": [],
       "parameter": "^P_.+$",
       "patternKind": "required",
+      "screenElement": "^SC_.+$",
       "selectOption": "^S_.+$",
       "severity": "Error"
     },
