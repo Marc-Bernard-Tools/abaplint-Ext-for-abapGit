@@ -45,6 +45,7 @@
     "allowed_object_types": {
       "allowed": [
         "CLAS",
+        "DEVC",
         "INTF",
         "W3MI"
       ],
@@ -98,7 +99,7 @@
       "severity": "Error"
     },
     "check_comments": {
-      "allowEndOfLine": false,
+      "allowEndOfLine": true,
       "exclude": [],
       "severity": "Error"
     },
@@ -137,7 +138,7 @@
       "severity": "Error"
     },
     "class_attribute_names": {
-      "constants": "",
+      "constants": "^C_.+$",
       "exclude": [],
       "ignoreExceptions": true,
       "ignoreInterfaces": false,
@@ -160,7 +161,7 @@
     "commented_code": {
       "allowIncludeInFugr": true,
       "exclude": [],
-      "severity": "Error"
+      "severity": "Warning"
     },
     "constructor_visibility_public": {
       "exclude": [],
@@ -170,6 +171,12 @@
       "exclude": [],
       "severity": "Error",
       "spaces": 1
+    },
+    "cyclic_oo": {
+      "exclude": [],
+      "severity": "Error",
+      "skip": [],
+      "skipSharedMemory": true
     },
     "cyclomatic_complexity": {
       "exclude": [],
@@ -262,7 +269,18 @@
       "severity": "Error"
     },
     "forbidden_void_type": {
-      "check": [],
+      "check": [
+        "^stringtab$",
+        "^char[0-9]+$",
+        "^int4$",
+        "^rs_c_true$",
+        "^rs_c_false$",
+        "^flag$",
+        "^sydatum$",
+        "^syindex$",
+        "^sytabix$",
+        "^syuzeit$"
+      ],
       "exclude": [],
       "severity": "Error"
     },
@@ -375,7 +393,7 @@
       "severity": "Error"
     },
     "identical_contents": {
-      "exclude": [],
+      "exclude": [".*"],
       "severity": "Error"
     },
     "identical_descriptions": {
@@ -387,7 +405,7 @@
       "severity": "Error"
     },
     "if_in_if": {
-      "exclude": [],
+      "exclude": [".*"],
       "severity": "Error"
     },
     "implement_methods": {
@@ -395,8 +413,8 @@
       "severity": "Error"
     },
     "in_statement_indentation": {
-      "blockStatements": 0,
-      "exclude": [],
+      "blockStatements": 2,
+      "exclude": [".*"],
       "ignoreExceptions": true,
       "severity": "Error"
     },
@@ -407,7 +425,7 @@
       "ignoreExceptions": true,
       "ignoreGlobalClassDefinition": false,
       "ignoreGlobalInterface": false,
-      "selectionScreenBlockIndentation": true,
+      "selectionScreenBlockIndentation": false,
       "severity": "Error"
     },
     "inline_data_old_versions": {
@@ -507,8 +525,8 @@
       "checkForms": true,
       "errorWhenEmpty": true,
       "exclude": [],
-      "ignoreTestClasses": false,
-      "severity": "Error",
+      "ignoreTestClasses": true,
+      "severity": "Warning",
       "statements": 100
     },
     "method_overwrites_builtin": {
@@ -557,7 +575,7 @@
       "severity": "Error"
     },
     "no_public_attributes": {
-      "allowReadOnly": false,
+      "allowReadOnly": true,
       "exclude": [],
       "ignoreTestClasses": false,
       "severity": "Error"
@@ -792,6 +810,10 @@
       "severity": "Error"
     },
     "unsecure_fae": {
+      "exclude": [],
+      "severity": "Error"
+    },
+    "unused_ddic": {
       "exclude": [],
       "severity": "Error"
     },
