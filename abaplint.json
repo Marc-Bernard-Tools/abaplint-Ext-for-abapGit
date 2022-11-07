@@ -32,9 +32,7 @@
     "abapdoc": {
       "checkLocal": false,
       "classDefinition": false,
-      "exclude": [
-        ".*"
-      ],
+      "exclude": [".*"],
       "interfaceDefinition": false,
       "severity": "Error"
     },
@@ -861,7 +859,7 @@
     }
   },
   "syntax": {
-    "errorNamespace": "^(Z|Y|LCL_|TY_|LIF_)",
+    "errorNamespace": "^(LCL_|LIF_|Y|Z)",
     "globalConstants": [
       "seop_ext_class_locals_def",
       "seop_ext_class_locals_imp",
