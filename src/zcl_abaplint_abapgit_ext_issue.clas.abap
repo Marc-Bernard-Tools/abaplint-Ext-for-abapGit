@@ -351,6 +351,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
     ENDDO.
 
     REPLACE ALL OCCURRENCES OF '#' IN lv_obj_name WITH '/'.
+    REPLACE ALL OCCURRENCES OF '#' IN lv_obj_subtype WITH '/'.
 
     CLEAR rs_issue.
     rs_issue-obj_type    = lv_obj_type.
