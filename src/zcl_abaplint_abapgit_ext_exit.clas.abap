@@ -119,8 +119,8 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
         lv_commit = lo_repo_online->get_current_remote( ).
 
-      CATCH zcx_abapgit_exception INTO lx_error.
-        ii_html->add( |<div>{ lx_error->get_text( ) }</div>| ).
+      CATCH zcx_abapgit_exception.
+        " If this fails, AG will show an error on the repo view anyway
         RETURN.
     ENDTRY.
 
