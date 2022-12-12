@@ -124,6 +124,11 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
         RETURN.
     ENDTRY.
 
+    " abaplint is only available on GitHub
+    IF lo_repo_online->get_url( ) NS 'github.com'.
+      RETURN.
+    ENDIF.
+
     READ TABLE mt_wall INTO ls_wall WITH TABLE KEY commit = lv_commit.
     IF sy-subrc <> 0.
 
