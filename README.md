@@ -49,6 +49,22 @@ Optionally, you can sort the results by object, location, or error code. You can
 
 ## Installation
 
+### Prerequisites
+
+abaplint needs to be installed and given access to your GitHub repository.
+
+1. Install abaplint
+
+   https://github.com/apps/abaplint/installations/new
+
+2. Give abaplint access to your repos 
+
+   https://github.com/settings/installations
+
+3. Add abaplint.json to your repo
+
+   Get latest default from https://playground.abaplint.org (2nd tab)
+
 ### Repository
 
 You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit. We recommend to use package `$ABAPLINT-EXT`.
