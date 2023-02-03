@@ -15,6 +15,12 @@ and [ISO Date Format](https://www.iso.org/iso-8601-date-and-time-format.html).
 ### Fixed
 
 
+## Version [1.2.1] - 2023-02-03
+
+### Fixed
+
+- Remove dependency on abapGit SHA1 type (due to https://github.com/abapGit/abapGit/pull/6029)
+
 ## Version [1.2.0] - 2022-12-12
 
 ### Changed
@@ -45,7 +51,8 @@ and [ISO Date Format](https://www.iso.org/iso-8601-date-and-time-format.html).
 Public Release
 
 
-[Unreleased]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.2.0...main
+[Unreleased]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.2.1...main
+[1.2.1]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.1.1...1.2.0
 [1.1.1]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit/compare/1.0.0...1.1.0
