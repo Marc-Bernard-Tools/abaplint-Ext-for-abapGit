@@ -23,7 +23,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
     METHODS constructor
       IMPORTING
         !iv_url    TYPE string
-        !iv_commit TYPE zif_abapgit_definitions=>ty_sha1
+        !iv_commit TYPE zif_abapgit_git_definitions=>ty_sha1
       RAISING
         zcx_abapgit_exception .
     METHODS get
@@ -35,7 +35,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
   PRIVATE SECTION.
 
     DATA mv_url TYPE string .
-    DATA mv_commit TYPE zif_abapgit_definitions=>ty_sha1 .
+    DATA mv_commit TYPE zif_abapgit_git_definitions=>ty_sha1 .
 
 ENDCLASS.
 
