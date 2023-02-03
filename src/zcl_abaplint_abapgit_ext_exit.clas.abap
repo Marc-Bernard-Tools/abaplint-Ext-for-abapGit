@@ -7,6 +7,8 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
 
     CONSTANTS c_version TYPE string VALUE '1.2.0' ##NEEDED.
 
+    TYPES ty_sha1 TYPE c LENGTH 40.
+
     CLASS-METHODS get_instance
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_exit.
@@ -104,7 +106,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     DATA:
       lx_error       TYPE REF TO zcx_abapgit_exception,
       lo_repo_online TYPE REF TO zcl_abapgit_repo_online,
-      lv_commit      TYPE zif_abapgit_git_definitions=>ty_sha1,
+      lv_commit      TYPE ty_sha1,
       ls_wall        TYPE ty_wall,
       lo_check_run   TYPE REF TO zcl_abaplint_abapgit_ext_chkrn,
       ls_check_run   TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run,
