@@ -32,7 +32,7 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
         zcx_abapgit_ajson_error.
     METHODS get_check_runs
       IMPORTING
-        !iv_commit     TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1
+        !iv_commit     TYPE zif_abaplint_abapgit_ext=>ty_sha1
       RETURNING
         VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
       RAISING
