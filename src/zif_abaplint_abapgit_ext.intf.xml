@@ -5,7 +5,7 @@
    <VSEOINTERF>
     <CLSNAME>ZIF_ABAPLINT_ABAPGIT_EXT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>aplint - Extension for abapGit (Definitions)</DESCRIPT>
+    <DESCRIPT>abaplint - Extension for abapGit (Definitions)</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
