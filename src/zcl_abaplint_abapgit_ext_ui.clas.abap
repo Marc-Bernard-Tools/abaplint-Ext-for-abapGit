@@ -8,6 +8,7 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
 
     INTERFACES zif_abapgit_gui_event_handler.
     INTERFACES zif_abapgit_gui_renderable.
+    INTERFACES zif_abapgit_gui_menu_provider.
 
     CLASS-METHODS create
       IMPORTING
@@ -18,6 +19,7 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         VALUE(ri_page)  TYPE REF TO zif_abapgit_gui_renderable
       RAISING
         zcx_abapgit_exception.
+
     METHODS constructor
       IMPORTING
         !iv_key         TYPE zif_abapgit_persistence=>ty_repo-key OPTIONAL
@@ -25,6 +27,7 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         !iv_count_total TYPE string
       RAISING
         zcx_abapgit_exception.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -37,28 +40,29 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         jump_edit          TYPE string VALUE 'jump_edit',
         toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action.
+
     CONSTANTS c_lines_before TYPE i VALUE 5.
     CONSTANTS c_lines_after TYPE i VALUE 5.
     CONSTANTS c_logo TYPE string VALUE 'abaplint_logo.png' ##NO_TEXT.
-    CLASS-DATA gv_view_source TYPE abap_bool.
+
     DATA mo_repo TYPE REF TO zcl_abapgit_repo_online.
     DATA mv_check_run TYPE string.
     DATA mv_count_total TYPE i.
     DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues.
+    DATA mv_view_source TYPE abap_bool.
 
-    CLASS-METHODS _build_menu
-      RETURNING
-        VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar.
     METHODS _get_issues
       RETURNING
         VALUE(rt_issues) TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues
       RAISING
         zcx_abapgit_exception.
+
     METHODS _get_logo
       IMPORTING
         !iv_title      TYPE string OPTIONAL
       RETURNING
         VALUE(rv_html) TYPE string.
+
     METHODS _get_mime
       IMPORTING
         !iv_mime_name   TYPE csequence
@@ -66,11 +70,13 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         VALUE(rv_xdata) TYPE xstring
       RAISING
         zcx_abapgit_exception.
+
     METHODS _render_footer
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
         zcx_abapgit_exception.
+
     METHODS _render_issue
       IMPORTING
         !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
@@ -78,16 +84,19 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
         zcx_abapgit_exception.
+
     METHODS _render_issues
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
         zcx_abapgit_exception.
+
     METHODS _render_source
       IMPORTING
         !is_issue      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issue
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html.
+
 ENDCLASS.
 
 
@@ -115,7 +124,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     mt_issues = _get_issues( ).
 
     " Could be a user setting
-    gv_view_source = abap_true.
+    mv_view_source = abap_true.
 
     gui_services( )->cache_asset(
       iv_type    = 'image'
@@ -137,9 +146,9 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         iv_count_total = iv_count_total.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
-      iv_page_title      = 'abaplint Issues'
-      io_page_menu       = _build_menu( )
-      ii_child_component = lo_component ).
+      iv_page_title         = 'abaplint Issues'
+      ii_page_menu_provider = lo_component
+      ii_child_component    = lo_component ).
 
   ENDMETHOD.
 
@@ -160,8 +169,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
       WHEN c_action-toggle_view_source.
 
-        "todo, update menu which requires enhancement of ZCL_ABAPGIT_GUI_PAGE_HOC
-        gv_view_source = boolc( gv_view_source = abap_false ) ##TODO.
+        mv_view_source = boolc( mv_view_source = abap_false ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
       WHEN c_action-jump_edit.
@@ -212,27 +220,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_abapgit_gui_renderable~render.
-
-    gui_services( )->register_event_handler( me ).
-
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
-
-    ri_html->add( `<div class="repo">` ).
-    ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
-                    io_repo               = mo_repo
-                    iv_show_commit        = abap_false
-                    iv_interactive_branch = abap_false ) ).
-    ri_html->add( `</div>` ).
-
-    ri_html->add( _render_issues( ) ).
-
-    ri_html->add( _render_footer( ) ).
-
-  ENDMETHOD.
-
-
-  METHOD _build_menu.
+  METHOD zif_abapgit_gui_menu_provider~get_menu.
 
     DATA:
       lo_sort_menu TYPE REF TO zcl_abapgit_html_toolbar,
@@ -254,12 +242,12 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     lo_view_menu->add(
       iv_txt = 'Source Code'
-      iv_chk = gv_view_source
+      iv_chk = mv_view_source
       iv_act = c_action-toggle_view_source ).
 
-    CREATE OBJECT ro_menu.
+    CREATE OBJECT ro_toolbar.
 
-    ro_menu->add(
+    ro_toolbar->add(
       iv_txt = 'Sort'
       io_sub = lo_sort_menu
       )->add(
@@ -268,6 +256,26 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       )->add(
       iv_txt = 'Back'
       iv_act = zif_abapgit_definitions=>c_action-go_back ).
+
+  ENDMETHOD.
+
+
+  METHOD zif_abapgit_gui_renderable~render.
+
+    gui_services( )->register_event_handler( me ).
+
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+
+    ri_html->add( `<div class="repo">` ).
+    ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
+                    io_repo               = mo_repo
+                    iv_show_commit        = abap_false
+                    iv_interactive_branch = abap_false ) ).
+    ri_html->add( `</div>` ).
+
+    ri_html->add( _render_issues( ) ).
+
+    ri_html->add( _render_footer( ) ).
 
   ENDMETHOD.
 
@@ -488,7 +496,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_typ = zif_abapgit_html=>c_action_type-sapevent ).
     ri_html->add( |<span class="margin-v5">{ _get_logo( lv_msg_code ) } { lv_msg_text } ({ lv_msg_link })</span>| ).
 
-    IF gv_view_source = abap_true.
+    IF mv_view_source = abap_true.
       ri_html->add( _render_source( is_issue ) ).
     ENDIF.
 
@@ -519,15 +527,20 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD _render_source.
 
     DATA:
-      lv_source LIKE LINE OF is_issue-source,
-      lv_line   TYPE i,
-      lv_class  TYPE string.
+      lv_source      LIKE LINE OF is_issue-source,
+      lv_line        TYPE i,
+      lv_class       TYPE string,
+      lo_highlighter TYPE REF TO zcl_abapgit_syntax_highlighter.
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     IF is_issue-source IS INITIAL.
       RETURN.
     ENDIF.
+
+    " Assume all findings are in ABAP code
+    lo_highlighter = zcl_abapgit_syntax_factory=>create( 'code.abap' ).
+    ASSERT lo_highlighter IS NOT INITIAL.
 
     " Use same styles as diff pages
     ri_html->add( '<div class="diff_content">' ).
@@ -541,21 +554,16 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     LOOP AT is_issue-source INTO lv_source FROM is_issue-line - c_lines_before TO is_issue-line + c_lines_after.
       lv_line = sy-tabix.
-      lv_source = escape(
-        val    = lv_source
-        format = cl_abap_format=>e_html_text ).
+      lv_source = lo_highlighter->process_line( lv_source ).
       ri_html->add( '<tr>' ).
       IF lv_line = is_issue-line.
         CASE is_issue-level.
           WHEN 'failure'.
-            "red
-            lv_class = 'diff_del'.
+            lv_class = 'diff_del'. "red
           WHEN 'warning'.
-            "yellow
-            lv_class = 'diff_upd'.
+            lv_class = 'diff_upd'. "yellow
           WHEN OTHERS.
-            "green
-            lv_class = 'diff_ins'.
+            lv_class = 'diff_ins'. "green
         ENDCASE.
       ELSE.
         lv_class = 'diff_others'.
