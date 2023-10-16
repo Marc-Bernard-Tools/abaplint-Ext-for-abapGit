@@ -55,7 +55,7 @@ Optionally, you can sort the results by object, location, or error code. You can
 
 2. abapGit needs to be installed
 
-3. abaplint needs to be installed and given access to your GitHub repository.
+3. abaplint must be installed and given access to your GitHub repository.
 
    - Install abaplint
 
@@ -67,11 +67,11 @@ Optionally, you can sort the results by object, location, or error code. You can
 
    - Add abaplint.json to your repo
 
-     Get latest default from https://playground.abaplint.org (2nd tab)
+     Get the latest default from [schema.abapgit.org](https://schema.abaplint.org/default.json)
 
 ### Repository
 
-You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit. We recommend to use package `$ABAPGIT-EXT-ABAPLINT`.
+You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit. We recommend using package `$ABAPGIT-EXT-ABAPLINT`.
 
 ### User Exits
 
