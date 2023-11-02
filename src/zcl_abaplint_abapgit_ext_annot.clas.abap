@@ -98,7 +98,7 @@ CLASS zcl_abaplint_abapgit_ext_annot IMPLEMENTATION.
         ENDLOOP.
 
       CATCH zcx_abapgit_ajson_error INTO lx_error.
-        zcx_abapgit_exception=>raise( lx_error->get_text( ) ).
+        zcx_abapgit_exception=>raise_with_text( lx_error ).
     ENDTRY.
 
   ENDMETHOD.

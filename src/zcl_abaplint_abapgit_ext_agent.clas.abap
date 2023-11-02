@@ -7,8 +7,10 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
   " https://docs.github.com/en/rest/reference/checks
   PUBLIC SECTION.
 
+    CONSTANTS c_github_api_version TYPE string VALUE '2022-11-28'.
+
     " Maximum number of annotations available by API without paging
-    CONSTANTS c_max_annotations TYPE i VALUE 50 ##NO_TEXT.
+    CONSTANTS c_max_annotations TYPE i VALUE 50.
 
     CLASS-METHODS get_instance
       IMPORTING
@@ -79,6 +81,10 @@ CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
     mo_agent->global_headers( )->set(
       iv_key = 'Accept'
       iv_val = 'application/vnd.github.v3+json' ).
+
+    mo_agent->global_headers( )->set(
+      iv_key = 'X-GitHub-Api-Version'
+      iv_val = c_github_api_version ).
 
     " Get auth token from repo
     IF zcl_abapgit_login_manager=>get( iv_url ) IS NOT INITIAL.
