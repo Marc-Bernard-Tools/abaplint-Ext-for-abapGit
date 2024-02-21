@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: abaplint Extension for abapGit
 Upstream-Contact: Marc Bernard <hello@marcbernardtools.com>
-Source: https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit
+Source: https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
 
 Files: *
 Copyright: 2021 Marc Bernard <https://marcbernardtools.com/>
