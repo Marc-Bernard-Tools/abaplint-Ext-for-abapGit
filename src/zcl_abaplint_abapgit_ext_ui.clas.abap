@@ -4,6 +4,14 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
   FINAL
   CREATE PRIVATE.
 
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
   PUBLIC SECTION.
 
     INTERFACES zif_abapgit_gui_event_handler.
@@ -28,6 +36,7 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
       RAISING
         zcx_abapgit_exception.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
 
     CONSTANTS:
@@ -40,14 +49,16 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
         toggle_view_source TYPE string VALUE 'toggle_view_source',
       END OF c_action.
 
-    CONSTANTS c_lines_before TYPE i VALUE 5.
-    CONSTANTS c_lines_after TYPE i VALUE 5.
+    CONSTANTS:
+      c_lines_before TYPE i VALUE 5,
+      c_lines_after  TYPE i VALUE 5.
 
-    DATA mo_repo TYPE REF TO zcl_abapgit_repo_online.
-    DATA mv_check_run TYPE string.
-    DATA mv_count_total TYPE i.
-    DATA mt_issues TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues.
-    DATA mv_view_source TYPE abap_bool.
+    DATA:
+      mo_repo        TYPE REF TO zcl_abapgit_repo_online,
+      mv_check_run   TYPE string,
+      mv_count_total TYPE i,
+      mt_issues      TYPE zcl_abaplint_abapgit_ext_issue=>ty_issues,
+      mv_view_source TYPE abap_bool.
 
     METHODS _get_issues
       RETURNING
@@ -85,7 +96,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_ABAPGIT_EXT_UI IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -301,7 +312,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     DATA lv_url TYPE string.
 
-    lv_url = zcl_abaplint_abapgit_ext_exit=>get_instance( )->get_last_url( ).
+    lv_url = zcl_abaplint_abapgit_ext_exit=>get_last_url( ).
 
     CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 

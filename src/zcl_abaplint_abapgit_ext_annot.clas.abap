@@ -3,8 +3,17 @@ CLASS zcl_abaplint_abapgit_ext_annot DEFINITION
   FINAL
   CREATE PUBLIC.
 
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
 * GitHub REST API for Checks - Annotation
 * https://docs.github.com/en/rest/reference/checks
+************************************************************************
   PUBLIC SECTION.
 
     TYPES:
@@ -58,7 +67,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_abapgit_ext_annot IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_ABAPGIT_EXT_ANNOT IMPLEMENTATION.
 
 
   METHOD constructor.

@@ -3,8 +3,17 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
   FINAL
   CREATE PRIVATE.
 
-  " Calling Github API for check runs and annotations
-  " https://docs.github.com/en/rest/reference/checks
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
+* Calling Github API for check runs and annotations
+* https://docs.github.com/en/rest/reference/checks
+************************************************************************
   PUBLIC SECTION.
 
     CONSTANTS c_github_api_version TYPE string VALUE '2022-11-28'.
@@ -19,11 +28,13 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
         VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_agent
       RAISING
         zcx_abapgit_exception.
+
     METHODS constructor
       IMPORTING
         !iv_url TYPE string
       RAISING
         zcx_abapgit_exception.
+
     METHODS get_annotations
       IMPORTING
         !iv_check_run  TYPE string
@@ -32,14 +43,16 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
       RAISING
         zcx_abapgit_exception
         zcx_abapgit_ajson_error.
+
     METHODS get_check_runs
       IMPORTING
-        !iv_commit     TYPE zif_abaplint_abapgit_ext=>ty_sha1
+        !iv_commit     TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1
       RETURNING
         VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abapgit_exception
         zcx_abapgit_ajson_error.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -47,17 +60,19 @@ CLASS zcl_abaplint_abapgit_ext_agent DEFINITION
       BEGIN OF ty_instance,
         url       TYPE string,
         instanace TYPE REF TO zcl_abaplint_abapgit_ext_agent,
-      END OF ty_instance .
+      END OF ty_instance.
 
-    CLASS-DATA:
-      gt_instance TYPE HASHED TABLE OF ty_instance WITH UNIQUE KEY url .
-    DATA mv_url TYPE string .
-    DATA mo_agent TYPE REF TO zif_abapgit_http_agent .
+    CLASS-DATA gt_instance TYPE HASHED TABLE OF ty_instance WITH UNIQUE KEY url.
+
+    DATA:
+      mv_url   TYPE string,
+      mo_agent TYPE REF TO zif_abapgit_http_agent.
+
 ENDCLASS.
 
 
 
-CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_ABAPGIT_EXT_AGENT IMPLEMENTATION.
 
 
   METHOD constructor.

@@ -1,10 +1,19 @@
 CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC .
+  CREATE PUBLIC.
 
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
 * GitHub REST API for Checks - Check Run
 * https://docs.github.com/en/rest/reference/checks
+************************************************************************
   PUBLIC SECTION.
 
     TYPES:
@@ -23,25 +32,28 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
     METHODS constructor
       IMPORTING
         !iv_url    TYPE string
-        !iv_commit TYPE zif_abaplint_abapgit_ext=>ty_sha1
+        !iv_commit TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS get
       RETURNING
         VALUE(rs_check_run) TYPE ty_check_run
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA mv_url TYPE string .
-    DATA mv_commit TYPE zif_abaplint_abapgit_ext=>ty_sha1 .
+    DATA:
+      mv_url    TYPE string,
+      mv_commit TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1.
 
 ENDCLASS.
 
 
 
-CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
 
 
   METHOD constructor.

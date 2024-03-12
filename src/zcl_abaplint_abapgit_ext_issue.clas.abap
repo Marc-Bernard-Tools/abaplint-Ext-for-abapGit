@@ -3,7 +3,16 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
   FINAL
   CREATE PUBLIC .
 
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
 * Derive abapGit issue from abaplint annotation
+************************************************************************
   PUBLIC SECTION.
 
     TYPES:
@@ -132,7 +141,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_ABAPGIT_EXT_ISSUE IMPLEMENTATION.
 
 
   METHOD constructor.

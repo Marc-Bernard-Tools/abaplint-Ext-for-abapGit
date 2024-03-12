@@ -1,27 +1,31 @@
 CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
   PUBLIC
+  INHERITING FROM zcl_abapgit_user_exit_super
   FINAL
-  CREATE PRIVATE.
+  CREATE PUBLIC.
 
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
   PUBLIC SECTION.
 
-    CLASS-METHODS get_instance
-      RETURNING
-        VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_exit.
-    METHODS on_event
-      IMPORTING
-        !ii_event         TYPE REF TO zif_abapgit_gui_event
-      RETURNING
-        VALUE(rs_handled) TYPE zif_abapgit_gui_event_handler=>ty_handling_result
-      RAISING
-        zcx_abapgit_exception.
-    METHODS wall_message_repo
-      IMPORTING
-        !is_repo_meta TYPE zif_abapgit_persistence=>ty_repo
-        !ii_html      TYPE REF TO zif_abapgit_html.
-    METHODS get_last_url
+    CONSTANTS c_version TYPE string VALUE '2.0.0' ##NEEDED.
+
+    TYPES ty_sha1 TYPE c LENGTH 40.
+
+    METHODS:
+      zif_abapgit_user_exit~on_event REDEFINITION,
+      zif_abapgit_user_exit~wall_message_repo REDEFINITION.
+
+    CLASS-METHODS get_last_url
       RETURNING
         VALUE(rv_url) TYPE string.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -34,14 +38,16 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
 
     CONSTANTS:
       BEGIN OF c_action,
-        go_abaplint TYPE string VALUE 'go_abaplint',
+        go_abaplint TYPE string VALUE 'mbt_go_abaplint',
       END OF c_action.
+
     CONSTANTS:
       BEGIN OF c_git_status,
         queued      TYPE string VALUE 'queued',
         in_progress TYPE string VALUE 'in_progress',
         completed   TYPE string VALUE 'completed',
       END OF c_git_status.
+
     CONSTANTS:
       BEGIN OF c_git_conclusion,
         neutral         TYPE string VALUE 'neutral',
@@ -53,10 +59,10 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
         stale           TYPE string VALUE 'stale',
         timed_out       TYPE string VALUE 'timed_out',
       END OF c_git_conclusion.
-    CLASS-DATA go_instance TYPE REF TO zcl_abaplint_abapgit_ext_exit.
-    DATA:
-      mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit.
-    DATA mv_last_url TYPE string.
+
+    CLASS-DATA gv_last_url TYPE string.
+
+    DATA mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit.
 
     METHODS _wall_message_abaplint
       IMPORTING
@@ -71,20 +77,12 @@ ENDCLASS.
 CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
 
-  METHOD get_instance.
-    IF go_instance IS INITIAL.
-      CREATE OBJECT go_instance.
-    ENDIF.
-    ro_instance = go_instance.
-  ENDMETHOD.
-
-
   METHOD get_last_url.
-    rv_url = mv_last_url.
+    rv_url = gv_last_url.
   ENDMETHOD.
 
 
-  METHOD on_event.
+  METHOD zif_abapgit_user_exit~on_event.
 
     IF ii_event->mv_action = c_action-go_abaplint.
       rs_handled-page  = zcl_abaplint_abapgit_ext_ui=>create(
@@ -97,12 +95,12 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD wall_message_repo.
+  METHOD zif_abapgit_user_exit~wall_message_repo.
 
     DATA:
       lx_error       TYPE REF TO zcx_abapgit_exception,
       lo_repo_online TYPE REF TO zcl_abapgit_repo_online,
-      lv_commit      TYPE zif_abaplint_abapgit_ext=>ty_sha1,
+      lv_commit      TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1,
       ls_wall        TYPE ty_wall,
       lo_check_run   TYPE REF TO zcl_abaplint_abapgit_ext_chkrn,
       ls_check_run   TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run,
@@ -165,7 +163,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     ii_html->add( ls_wall-html->render( ) ).
 
     " Remember URL of last shown check run
-    mv_last_url = ls_wall-url.
+    gv_last_url = ls_wall-url.
 
   ENDMETHOD.
 
