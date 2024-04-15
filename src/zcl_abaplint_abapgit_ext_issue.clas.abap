@@ -1,7 +1,7 @@
 CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC .
+  CREATE PUBLIC.
 
 ************************************************************************
 * abaplint Extension for abapGit
@@ -27,9 +27,8 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
         level       TYPE string,
         title       TYPE string,
         url         TYPE string,
-      END OF ty_issue .
-    TYPES:
-      ty_issues TYPE STANDARD TABLE OF ty_issue WITH DEFAULT KEY .
+      END OF ty_issue,
+      ty_issues TYPE STANDARD TABLE OF ty_issue WITH DEFAULT KEY.
 
     METHODS constructor
       IMPORTING
@@ -37,24 +36,28 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
         !iv_issue      TYPE string OPTIONAL
         !iv_folder     TYPE string DEFAULT '/src/'
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS get
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
     TYPES:
-      ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY .
+      ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY.
 
     CONSTANTS:
       c_active TYPE c LENGTH 1 VALUE 'A' ##NO_TEXT.
-    DATA mv_folder TYPE string .
-    DATA mv_issue TYPE string .
-    DATA ms_issue TYPE ty_issue .
-    DATA ms_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation .
+
+    DATA:
+      mv_folder     TYPE string,
+      mv_issue      TYPE string,
+      ms_issue      TYPE ty_issue,
+      ms_annotation TYPE zcl_abaplint_abapgit_ext_annot=>ty_annotation.
 
     METHODS _folder_for_regex
       IMPORTING
@@ -62,49 +65,56 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
       RETURNING
         VALUE(rv_folder) TYPE string
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _get_issue_clas
       IMPORTING
         !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _get_issue_intf
       IMPORTING
         !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _get_issue_prog
       IMPORTING
         !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _get_issue_fugr
       IMPORTING
         !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _get_issue_type
       IMPORTING
         !is_issue       TYPE ty_issue
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _parse
       IMPORTING
         !iv_issue       TYPE string
       RETURNING
         VALUE(rs_issue) TYPE ty_issue
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _read_class_line
       IMPORTING
         !iv_clsname TYPE seoclsname
@@ -114,7 +124,8 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
         !ev_program TYPE progname
         !ev_line    TYPE i
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _read_class_include
       IMPORTING
         !iv_clsname       TYPE seoclsname
@@ -122,26 +133,29 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
       RETURNING
         VALUE(rv_program) TYPE progname
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _read_functions
       IMPORTING
         !iv_area          TYPE rs38l_area
       RETURNING
         VALUE(rt_functab) TYPE ty_functab
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
     METHODS _read_program
       IMPORTING
         !iv_program      TYPE progname
       RETURNING
         VALUE(rt_source) TYPE rswsourcet
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
+
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT_EXT_ISSUE IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
 
   METHOD constructor.
