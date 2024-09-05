@@ -96,7 +96,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT_EXT_UI IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -342,6 +342,7 @@ CLASS ZCL_ABAPLINT_ABAPGIT_EXT_UI IMPLEMENTATION.
 
     DATA:
       ls_mtdkey    TYPE seocpdkey,
+      lv_subtype   TYPE string,
       lv_class     TYPE string,
       lv_icon      TYPE string,
       lv_jump_type TYPE tadir-object,
@@ -376,7 +377,8 @@ CLASS ZCL_ABAPLINT_ABAPGIT_EXT_UI IMPLEMENTATION.
 
     CASE is_issue-obj_type.
       WHEN 'CLAS'.
-        CASE to_lower( is_issue-obj_subtype ).
+        lv_subtype = to_lower( is_issue-obj_subtype ).
+        CASE lv_subtype.
           WHEN zif_abapgit_oo_object_fnc=>c_parts-locals_def.
             lv_obj_text = |CLAS { is_issue-obj_name } : Local Definitions|.
           WHEN zif_abapgit_oo_object_fnc=>c_parts-locals_imp.
