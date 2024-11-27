@@ -22,6 +22,8 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
       zif_abapgit_user_exit~on_event REDEFINITION,
       zif_abapgit_user_exit~wall_message_repo REDEFINITION.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS get_last_url
       RETURNING
         VALUE(rv_url) TYPE string.
@@ -60,7 +62,9 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
         timed_out       TYPE string VALUE 'timed_out',
       END OF c_git_conclusion.
 
-    CLASS-DATA gv_last_url TYPE string.
+    CLASS-DATA:
+      gv_div_attr TYPE string,
+      gv_last_url TYPE string.
 
     DATA mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit.
 
@@ -70,11 +74,17 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
         !is_check_run  TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html.
+
 ENDCLASS.
 
 
 
 CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    gv_div_attr = 'id="abaplint-message" style="padding-right: 10px; margin-top: 10px; float: left;"'.
+  ENDMETHOD.
 
 
   METHOD get_last_url.
@@ -100,6 +110,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     DATA:
       lx_error       TYPE REF TO zcx_abapgit_exception,
       lo_repo_online TYPE REF TO zcl_abapgit_repo_online,
+      lt_files       TYPE zif_abapgit_git_definitions=>ty_files_tt,
       lv_commit      TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1,
       ls_wall        TYPE ty_wall,
       lo_check_run   TYPE REF TO zcl_abaplint_abapgit_ext_chkrn,
@@ -113,17 +124,27 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     TRY.
         lo_repo_online ?= zcl_abapgit_repo_srv=>get_instance( )->get( is_repo_meta-key ).
 
+        " abaplint is only available on GitHub
+        IF lo_repo_online->get_url( ) NS 'github.com'.
+          RETURN.
+        ENDIF.
+
         lv_commit = lo_repo_online->get_current_remote( ).
+
+        " Check if repo contains abaplint rules
+        lt_files = lo_repo_online->get_files_remote( ).
+        LOOP AT lt_files TRANSPORTING NO FIELDS USING KEY file_path
+          WHERE path = '/' AND filename CP 'abaplint*json'.
+          EXIT.
+        ENDLOOP.
+        IF sy-subrc <> 0.
+          RETURN.
+        ENDIF.
 
       CATCH zcx_abapgit_exception.
         " If this fails, AG will show an error on the repo view anyway
         RETURN.
     ENDTRY.
-
-    " abaplint is only available on GitHub
-    IF lo_repo_online->get_url( ) NS 'github.com'.
-      RETURN.
-    ENDIF.
 
     READ TABLE mt_wall INTO ls_wall WITH TABLE KEY commit = lv_commit.
     IF sy-subrc <> 0.
@@ -137,11 +158,12 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
           ls_check_run = lo_check_run->get( ).
 
           IF ls_check_run IS INITIAL.
+            ii_html->add( |<div { gv_div_attr }>No abaplint check run found. </div>| ).
             RETURN.
           ENDIF.
 
         CATCH zcx_abapgit_exception INTO lx_error.
-          ii_html->add( |<div>{ lx_error->get_text( ) }</div>| ).
+          ii_html->add( |<div { gv_div_attr }>{ lx_error->get_text( ) }</div>| ).
           RETURN.
       ENDTRY.
 
@@ -176,13 +198,11 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lv_msg     TYPE string,
       lv_summary TYPE string.
 
+    ri_html = zcl_abapgit_html=>create( ).
+
+    ri_html->add( |<div { gv_div_attr }>| ).
+
     lv_act = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }|.
-
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
-
-    lv_style = 'padding-right: 10px; margin-top: 10px; float: left;'.
-
-    ri_html->add( |<div id="abaplint-message" style="{ lv_style }">| ).
 
     CASE is_check_run-status.
       WHEN c_git_status-queued.

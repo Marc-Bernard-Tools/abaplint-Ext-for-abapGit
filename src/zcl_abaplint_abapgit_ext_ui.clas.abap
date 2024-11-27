@@ -41,12 +41,12 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
 
     CONSTANTS:
       BEGIN OF c_action,
-        go_back            TYPE string VALUE 'go_back',
-        sort_1             TYPE string VALUE 'sort_1',
-        sort_2             TYPE string VALUE 'sort_2',
-        sort_3             TYPE string VALUE 'sort_3',
-        jump_edit          TYPE string VALUE 'jump_edit',
-        toggle_view_source TYPE string VALUE 'toggle_view_source',
+        sort_1             TYPE string VALUE 'mbt_sort_1',
+        sort_2             TYPE string VALUE 'mbt_sort_2',
+        sort_3             TYPE string VALUE 'mbt_sort_3',
+        jump_edit          TYPE string VALUE 'mbt_jump_edit',
+        toggle_view_source TYPE string VALUE 'mbt_toggle_view_source',
+        rules              TYPE string VALUE 'mbt_rules',
       END OF c_action.
 
     CONSTANTS:
@@ -158,9 +158,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       lv_position  TYPE string.
 
     CASE ii_event->mv_action.
-      WHEN c_action-go_back.
+      WHEN c_action-rules.
 
-        rs_handled-state = zcl_abapgit_gui=>c_event_state-go_back.
+        rs_handled-page = zcl_abaplint_abapgit_ext_rules=>create( mo_repo->get_key( ) ).
+        rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
 
       WHEN c_action-toggle_view_source.
 
@@ -226,10 +227,10 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     lo_sort_menu->add(
       iv_txt = 'By Object, Sub-object, Line'
       iv_act = c_action-sort_1
-      )->add(
+    )->add(
       iv_txt = 'By Object, Check, Sub-object'
       iv_act = c_action-sort_2
-      )->add(
+    )->add(
       iv_txt = 'By Check, Object, Sub-object'
       iv_act = c_action-sort_3 ).
 
@@ -245,10 +246,13 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     ro_toolbar->add(
       iv_txt = 'Sort'
       io_sub = lo_sort_menu
-      )->add(
+    )->add(
       iv_txt = 'View'
       io_sub = lo_view_menu
-      )->add(
+    )->add(
+      iv_txt = 'Rules'
+      iv_act = c_action-rules
+    )->add(
       iv_txt = 'Back'
       iv_act = zif_abapgit_definitions=>c_action-go_back ).
 
@@ -257,16 +261,16 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
   METHOD zif_abapgit_gui_renderable~render.
 
-    gui_services( )->register_event_handler( me ).
+    register_handlers( ).
 
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+    ri_html = zcl_abapgit_html=>create( ).
 
-    ri_html->add( `<div class="repo">` ).
+    ri_html->add( '<div class="repo">' ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
                     io_repo               = mo_repo
                     iv_show_commit        = abap_false
                     iv_interactive_branch = abap_false ) ).
-    ri_html->add( `</div>` ).
+    ri_html->add( '</div>' ).
 
     ri_html->add( _render_issues( ) ).
 
@@ -314,7 +318,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     lv_url = zcl_abaplint_abapgit_ext_exit=>get_last_url( ).
 
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+    ri_html = zcl_abapgit_html=>create( ).
 
     IF lines( mt_issues ) = 0.
 
@@ -354,7 +358,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       lv_msg_code  TYPE string,
       lv_rest      TYPE string.
 
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+    ri_html = zcl_abapgit_html=>create( ).
 
     CASE is_issue-level.
       WHEN 'failure'.
@@ -451,7 +455,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     DATA ls_issue LIKE LINE OF mt_issues.
 
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+    ri_html = zcl_abapgit_html=>create( ).
 
     ri_html->add( '<div class="ci-result"><ul>' ).
 
@@ -474,7 +478,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       lv_class       TYPE string,
       lo_highlighter TYPE REF TO zcl_abapgit_syntax_highlighter.
 
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+    ri_html = zcl_abapgit_html=>create( ).
 
     IF is_issue-source IS INITIAL.
       RETURN.

@@ -120,7 +120,6 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
         !iv_clsname TYPE seoclsname
         !iv_line    TYPE i
       EXPORTING
-        !et_source  TYPE rswsourcet
         !ev_program TYPE progname
         !ev_line    TYPE i
       RAISING
@@ -412,24 +411,31 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
     DATA:
       lx_error    TYPE REF TO cx_root,
-      lo_instance TYPE REF TO cl_oo_factory,
-      lo_source   TYPE REF TO cl_oo_clif_source,
+      lo_instance TYPE REF TO object, "cl_oo_factory,
+      lo_source   TYPE REF TO object, "cl_oo_clif_source,
+      lo_scan     TYPE REF TO object, "cl_oo_source_scanner
       lo_scanner  TYPE REF TO cl_oo_source_scanner_class,
       ls_int      TYPE cl_oo_source_scanner_class=>type_source_interval,
       lt_methods  TYPE cl_oo_source_scanner_class=>type_method_implementations,
       ls_method   TYPE seocpdkey.
 
-    " This won't work in 702 (see zcl_abapgit_oo_serializer for partial solution)
     TRY.
-        lo_instance = cl_oo_factory=>create_instance( ).
+        CALL METHOD ('CL_OO_FACTORY')=>('CREATE_INSTANCE')
+          RECEIVING
+            result = lo_instance.
 
-        lo_source ?= lo_instance->create_clif_source(
-          clif_name = iv_clsname
-          version   = c_active ).
+        CALL METHOD lo_instance->('CREATE_CLIF_SOURCE')
+          EXPORTING
+            clif_name = iv_clsname
+            version   = c_active
+          RECEIVING
+            result    = lo_source.
 
-        lo_source->get_source( IMPORTING source = et_source ).
+        CALL METHOD lo_source->('GET_SCANNER')
+          RECEIVING
+            scanner = lo_scan.
 
-        lo_scanner ?= lo_source->get_scanner( ).
+        lo_scanner ?= lo_scan.
 
         ls_int = lo_scanner->get_public_section_interval( ).
         IF iv_line >= ls_int-begin-line AND iv_line < ls_int-end-line.
@@ -463,8 +469,9 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
           ENDIF.
         ENDLOOP.
 
-      CATCH cx_root INTO lx_error.
-        MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
+      CATCH cx_root.
+        ev_program = cl_oo_classname_service=>get_classpool_name( iv_clsname ).
+        ev_line = 1.
     ENDTRY.
 
   ENDMETHOD.
