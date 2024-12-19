@@ -75,8 +75,6 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
         zcx_abapgit_exception.
 
     METHODS get_logo
-      IMPORTING
-        !iv_filename  TYPE string
       RETURNING
         VALUE(result) TYPE string.
 
@@ -343,8 +341,8 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     result->add( '</tr>' ).
     result->add( '</thead>' ).
     result->add( render_diff_lines(
-                   ii_rules_left   = ii_rules_left
-                   ii_rules_right  = li_rules_compare ) ).
+                   ii_rules_left  = ii_rules_left
+                   ii_rules_right = li_rules_compare ) ).
     result->add( '</table>' ).
 
   ENDMETHOD.
@@ -361,15 +359,15 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     result = zcl_abapgit_html=>create( ).
 
     lv_mark = ` `.
-    IF is_diff-result IS NOT INITIAL.
-      IF is_diff-result = zif_abapgit_definitions=>c_diff-update.
+
+    CASE is_diff-result.
+      WHEN zif_abapgit_definitions=>c_diff-update.
         lv_bg = ' diff_upd'.
         lv_mark = `~`.
-      ELSEIF is_diff-result = zif_abapgit_definitions=>c_diff-insert.
+      WHEN zif_abapgit_definitions=>c_diff-insert.
         lv_bg = ' diff_ins'.
         lv_mark = `+`.
-      ENDIF.
-    ENDIF.
+    ENDCASE.
 
     lv_new = |<td class="num diff_others" line-num="{ is_diff-new_num }"></td>|
           && |<td class="mark diff_others">{ lv_mark }</td>|
@@ -377,15 +375,15 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
 
     CLEAR lv_bg.
     lv_mark = ` `.
-    IF is_diff-result IS NOT INITIAL.
-      IF is_diff-result = zif_abapgit_definitions=>c_diff-update.
+
+    CASE is_diff-result.
+      WHEN zif_abapgit_definitions=>c_diff-update.
         lv_bg = ' diff_upd'.
         lv_mark = `~`.
-      ELSEIF is_diff-result = zif_abapgit_definitions=>c_diff-delete.
+      WHEN zif_abapgit_definitions=>c_diff-delete.
         lv_bg = ' diff_del'.
         lv_mark = `-`.
-      ENDIF.
-    ENDIF.
+    ENDCASE.
 
     lv_old = |<td class="num diff_others" line-num="{ is_diff-old_num }"></td>|
           && |<td class="mark diff_others">{ lv_mark }</td>|
@@ -407,7 +405,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
       lo_diff        TYPE REF TO zcl_abapgit_diff,
       lt_diffs       TYPE zif_abapgit_definitions=>ty_diffs_tt.
 
-    FIELD-SYMBOLS:
+    FIELD-SYMBOLS
       <ls_diff> LIKE LINE OF lt_diffs.
 
     result = zcl_abapgit_html=>create( ).
@@ -454,7 +452,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     result = zcl_abapgit_html=>create( ).
 
     result->add( '<div class="head">' ).
-    result->add( |{ get_logo( iv_filename ) }&nbsp;&nbsp;| ).
+    result->add( |{ get_logo( ) }&nbsp;&nbsp;| ).
     result->add( |{ iv_filename }&nbsp;({ iv_header })| ).
     result->add( '</div>' ).
 

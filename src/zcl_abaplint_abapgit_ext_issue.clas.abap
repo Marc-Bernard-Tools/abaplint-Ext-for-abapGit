@@ -48,6 +48,7 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
   PRIVATE SECTION.
 
     TYPES:
+      ty_screen  TYPE c LENGTH 4,
       ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY.
 
     CONSTANTS:
@@ -145,6 +146,15 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
     METHODS _read_program
       IMPORTING
         !iv_program      TYPE progname
+      RETURNING
+        VALUE(rt_source) TYPE rswsourcet
+      RAISING
+        zcx_abapgit_exception.
+
+    METHODS _read_program_dynpro
+      IMPORTING
+        !iv_program      TYPE progname
+        !iv_screen       TYPE ty_screen
       RETURNING
         VALUE(rt_source) TYPE rswsourcet
       RAISING
@@ -324,10 +334,22 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
   METHOD _get_issue_prog.
 
+    DATA lv_screen TYPE ty_screen.
+
     MOVE-CORRESPONDING is_issue TO rs_issue.
 
     rs_issue-program = is_issue-obj_name.
-    rs_issue-source  = _read_program( rs_issue-program ).
+
+    IF is_issue-obj_subtype CP 'screen*'.
+      lv_screen = is_issue-obj_subtype+7(4).
+      rs_issue-obj_subtype = lv_screen.
+
+      rs_issue-source = _read_program_dynpro(
+        iv_program = rs_issue-program
+        iv_screen  = lv_screen ).
+    ELSE.
+      rs_issue-source = _read_program( rs_issue-program ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -514,6 +536,34 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
       lv_msg = |Program { iv_program } does not exist in active version|.
       APPEND lv_msg TO rt_source.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD _read_program_dynpro.
+
+    DATA lt_flow_logic TYPE swydyflow.
+
+    FIELD-SYMBOLS <ls_flow_logic> LIKE LINE OF lt_flow_logic.
+
+    CALL FUNCTION 'RPY_DYNPRO_READ'
+      EXPORTING
+        progname         = iv_program
+        dynnr            = iv_screen
+      TABLES
+        flow_logic       = lt_flow_logic
+      EXCEPTIONS
+        cancelled        = 1
+        not_found        = 2
+        permission_error = 3
+        OTHERS           = 4.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    LOOP AT lt_flow_logic ASSIGNING <ls_flow_logic>.
+      APPEND <ls_flow_logic> TO rt_source.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

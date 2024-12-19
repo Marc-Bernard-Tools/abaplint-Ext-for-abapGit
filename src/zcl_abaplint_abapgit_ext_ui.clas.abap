@@ -152,11 +152,12 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD zif_abapgit_gui_event_handler~on_event.
 
     DATA:
-      lv_jump_type   TYPE tadir-object,
-      lv_jump_name   TYPE tadir-obj_name,
-      lv_include     TYPE progname,
-      lv_line_number TYPE i,
-      lv_position    TYPE c LENGTH 10.
+      lv_jump_type TYPE tadir-object,
+      lv_jump_name TYPE tadir-obj_name,
+      lv_include   TYPE progname,
+      lv_enclosing TYPE e071-obj_name,
+      lv_line      TYPE i,
+      lv_position  TYPE c LENGTH 10.
 
     CASE ii_event->mv_action.
       WHEN c_action-rules.
@@ -171,22 +172,30 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
       WHEN c_action-jump_edit.
 
-        lv_jump_type   = ii_event->query( )->get( 'TYPE' ).
-        lv_jump_name   = ii_event->query( )->get( 'NAME' ).
-        lv_include     = ii_event->query( )->get( 'INCLUDE' ).
-        lv_line_number = ii_event->query( )->get( 'LINE' ).
+        lv_jump_type = ii_event->query( )->get( 'TYPE' ).
+        lv_jump_name = ii_event->query( )->get( 'NAME' ).
+        lv_include   = ii_event->query( )->get( 'INCLUDE' ).
+        lv_line      = ii_event->query( )->get( 'LINE' ).
+
+        " Adjust for dynpros
+        " Note: jump to line does not work for dynpros, unfortunately
+        IF lv_jump_type = 'DYNP'.
+          lv_enclosing = lv_include.
+          CLEAR lv_include.
+        ENDIF.
 
         " We could use zcl_abapgit_objects=>jump but we want to EDIT
         " and stay in same window
         lv_position = nmax(
           val1 = 1
-          val2 = lv_line_number ).
+          val2 = lv_line ).
 
         CALL FUNCTION 'RS_TOOL_ACCESS'
           EXPORTING
             operation           = 'EDIT'
             object_name         = lv_jump_name
             object_type         = lv_jump_type
+            enclosing_object    = lv_enclosing
             include             = lv_include
             position            = lv_position
             in_new_window       = abap_false
@@ -410,8 +419,22 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
               lv_obj_text = |CLAS { is_issue-obj_name }|.
             ENDIF.
         ENDCASE.
+      WHEN 'PROG'.
+        " Screens
+        IF is_issue-obj_subtype IS INITIAL.
+          lv_obj_text = |PROG { is_issue-obj_name }|.
+        ELSE.
+          lv_obj_text = |PROG { is_issue-obj_name } Screen { is_issue-obj_subtype }|.
+          lv_jump_type = 'DYNP'.
+          lv_jump_name = is_issue-obj_subtype.
+        ENDIF.
       WHEN 'FUGR'.
-        lv_obj_text = |FUGR { is_issue-obj_name } { is_issue-obj_subtype }|.
+        " Function modules
+        IF is_issue-obj_subtype IS INITIAL.
+          lv_obj_text = |FUGR { is_issue-obj_name }|.
+        ELSE.
+          lv_obj_text = |FUGR { is_issue-obj_name } Function { is_issue-obj_subtype }|.
+        ENDIF.
       WHEN OTHERS.
         lv_obj_text = |{ is_issue-obj_type } { is_issue-obj_name }|.
     ENDCASE.
@@ -491,7 +514,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
     ASSERT lo_highlighter IS NOT INITIAL.
 
     " Use same styles as diff pages
-    ri_html->add( '<div class="diff_content">' ).
+    ri_html->add( '<div class="diff_content" style="margin-bottom:20px">' ).
     ri_html->add( '<table class="diff_tab syntax-hl" i>' ).
     ri_html->add( '<thead class="nav_line">' ).
     ri_html->add( '<tr>' ).

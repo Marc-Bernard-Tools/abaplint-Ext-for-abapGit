@@ -241,9 +241,9 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
             OR c_git_conclusion-timed_out.
             ri_html->add_a(
               iv_txt  = zcl_abapgit_html=>icon(
-                         iv_name  = 'times-solid'
-                         iv_class = 'error'
-                         iv_hint  = is_check_run-conclusion )
+                iv_name  = 'times-solid'
+                iv_class = 'error'
+                iv_hint  = is_check_run-conclusion )
               iv_act = lv_act ).
           WHEN OTHERS.
             ri_html->add( |Unexpected value "{ is_check_run-conclusion }" for "conclusion"| ).
