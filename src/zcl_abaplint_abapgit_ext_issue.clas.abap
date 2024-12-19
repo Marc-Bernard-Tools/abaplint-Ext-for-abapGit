@@ -410,7 +410,6 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
   METHOD _read_class_line.
 
     DATA:
-      lx_error    TYPE REF TO cx_root,
       lo_instance TYPE REF TO object, "cl_oo_factory,
       lo_source   TYPE REF TO object, "cl_oo_clif_source,
       lo_scan     TYPE REF TO object, "cl_oo_source_scanner

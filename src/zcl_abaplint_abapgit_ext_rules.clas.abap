@@ -44,7 +44,6 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
 
     CONSTANTS:
       c_abaplint_host     TYPE string VALUE 'https://schema.abaplint.org/',
-      c_abaplint_schema   TYPE string VALUE 'schema.json',
       c_abaplint_defaults TYPE string VALUE 'default.json'.
 
     DATA:
@@ -140,7 +139,6 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
         VALUE(result) TYPE REF TO zif_abapgit_html
       RAISING
         zcx_abapgit_exception.
-
 ENDCLASS.
 
 
@@ -220,10 +218,10 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
   METHOD get_repo_rules.
 
     DATA:
-      lx_error    TYPE REF TO zcx_abapgit_ajson_error,
       lv_filename TYPE string,
       lt_files    TYPE zif_abapgit_git_definitions=>ty_files_tt,
       ls_file     LIKE LINE OF lt_files,
+      lv_warning  TYPE abap_bool,
       lv_json     TYPE string,
       lt_json     TYPE string_table.
 
@@ -255,16 +253,20 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     mv_repo_filename = lv_filename.
     lv_json = zcl_abapgit_convert=>xstring_to_string_utf8( ls_file-data ).
 
-    " TODO: Workaround until ajson parses JSON with comments
-    IF lv_filename CS '.jsonc'.
-      SPLIT lv_json AT cl_abap_char_utilities=>newline INTO TABLE lt_json.
-      LOOP AT lt_json INTO lv_json.
-        FIND REGEX '(.*)(\/\/[\w\d\s]*)$' IN lv_json IGNORING CASE SUBMATCHES lv_json.
-        IF sy-subrc = 0.
-          MODIFY lt_json FROM lv_json.
-        ENDIF.
-      ENDLOOP.
-      CONCATENATE LINES OF lt_json INTO lv_json SEPARATED BY cl_abap_char_utilities=>newline.
+    " TODO: Workaround until ajson parses JSON5 with comments
+    " Removes end of line // comments
+    SPLIT lv_json AT cl_abap_char_utilities=>newline INTO TABLE lt_json.
+    LOOP AT lt_json INTO lv_json.
+      FIND REGEX '(.*)\/\/[^"]*$' IN lv_json IGNORING CASE SUBMATCHES lv_json.
+      IF sy-subrc = 0.
+        lv_warning = abap_true.
+        MODIFY lt_json FROM lv_json.
+      ENDIF.
+    ENDLOOP.
+    CONCATENATE LINES OF lt_json INTO lv_json SEPARATED BY cl_abap_char_utilities=>newline.
+
+    IF lv_warning = abap_true.
+      MESSAGE 'Rules contain comments which are not shown here!' TYPE 'S' DISPLAY LIKE 'W'.
     ENDIF.
 
     mi_repo_rules = zcl_abapgit_ajson=>parse( lv_json ).
