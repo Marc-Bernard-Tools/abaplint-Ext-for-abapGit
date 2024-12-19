@@ -38,7 +38,7 @@
       "severity": "Error"
     },
     "add_test_attributes": true,
-    "align_parameters": true,
+    "align_parameters": false,
     "align_pseudo_comments": true,
     "align_type_expressions": true,
     "allowed_object_naming": {
@@ -123,7 +123,9 @@
     "check_subrc": {
       "assign": true,
       "authorityCheck": true,
-      "exclude": [],
+      "exclude": [
+        "zcl_abaplint_abapgit_ext_rules.clas.abap"
+      ],
       "find": true,
       "insertDatabase": true,
       "modifyDatabase": true,
@@ -213,7 +215,9 @@
       "systemCall": true
     },
     "db_operation_in_loop": {
-      "exclude": [],
+      "exclude": [
+        "zcl_abaplint_abapgit_ext_rules.clas.abap"
+      ],
       "severity": "Error"
     },
     "definitions_top": {
