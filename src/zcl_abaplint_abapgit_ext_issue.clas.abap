@@ -51,7 +51,7 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
       ty_screen  TYPE c LENGTH 4,
       ty_functab TYPE STANDARD TABLE OF rs38l_incl WITH DEFAULT KEY.
 
-    CONSTANTS:
+    CONSTANTS
       c_active TYPE c LENGTH 1 VALUE 'A' ##NO_TEXT.
 
     DATA:
@@ -159,7 +159,6 @@ CLASS zcl_abaplint_abapgit_ext_issue DEFINITION
         VALUE(rt_source) TYPE rswsourcet
       RAISING
         zcx_abapgit_exception.
-
 ENDCLASS.
 
 
@@ -412,7 +411,7 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
   METHOD _read_class_include.
 
-    DATA: ls_include TYPE progstruc.
+    DATA ls_include TYPE progstruc.
 
     ASSERT iv_clspart = seop_ext_class_locals_def
         OR iv_clspart = seop_ext_class_locals_imp

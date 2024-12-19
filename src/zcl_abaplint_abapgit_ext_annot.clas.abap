@@ -42,8 +42,7 @@ CLASS zcl_abaplint_abapgit_ext_annot DEFINITION
         title            TYPE string,
         message          TYPE string,
         raw_details      TYPE string,
-      END OF ty_annotation.
-    TYPES:
+      END OF ty_annotation,
       ty_annotations TYPE STANDARD TABLE OF ty_annotation WITH DEFAULT KEY.
 
     METHODS constructor
@@ -67,7 +66,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT_EXT_ANNOT IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit_ext_annot IMPLEMENTATION.
 
 
   METHOD constructor.
