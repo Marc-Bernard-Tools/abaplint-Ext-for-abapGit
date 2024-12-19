@@ -14,9 +14,10 @@ CLASS zcl_abaplint_abapgit_ext_ui DEFINITION
 ************************************************************************
   PUBLIC SECTION.
 
-    INTERFACES zif_abapgit_gui_event_handler.
-    INTERFACES zif_abapgit_gui_renderable.
-    INTERFACES zif_abapgit_gui_menu_provider.
+    INTERFACES:
+      zif_abapgit_gui_event_handler,
+      zif_abapgit_gui_renderable,
+      zif_abapgit_gui_menu_provider.
 
     CLASS-METHODS create
       IMPORTING
@@ -151,11 +152,11 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
   METHOD zif_abapgit_gui_event_handler~on_event.
 
     DATA:
-      lv_jump_type TYPE tadir-object,
-      lv_jump_name TYPE tadir-obj_name,
-      lv_include   TYPE progname,
-      lv_line      TYPE i,
-      lv_position  TYPE string.
+      lv_jump_type   TYPE tadir-object,
+      lv_jump_name   TYPE tadir-obj_name,
+      lv_include     TYPE progname,
+      lv_line_number TYPE i,
+      lv_position    TYPE c LENGTH 10.
 
     CASE ii_event->mv_action.
       WHEN c_action-rules.
@@ -170,17 +171,17 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
       WHEN c_action-jump_edit.
 
-        lv_jump_type = ii_event->query( )->get( 'TYPE' ).
-        lv_jump_name = ii_event->query( )->get( 'NAME' ).
+        lv_jump_type   = ii_event->query( )->get( 'TYPE' ).
+        lv_jump_name   = ii_event->query( )->get( 'NAME' ).
+        lv_include     = ii_event->query( )->get( 'INCLUDE' ).
+        lv_line_number = ii_event->query( )->get( 'LINE' ).
 
-        IF lv_jump_type = 'PROG'.
-          lv_include = lv_jump_name.
-          lv_line = ii_event->query( )->get( 'LINE' ).
-          lv_position = nmax( val1 = 1
-                              val2 = lv_line ).
-        ENDIF.
+        " We could use zcl_abapgit_objects=>jump but we want to EDIT
+        " and stay in same window
+        lv_position = nmax(
+          val1 = 1
+          val2 = lv_line_number ).
 
-        " We could use zcl_abapgit_objects=>jump but we want to stay in same window
         CALL FUNCTION 'RS_TOOL_ACCESS'
           EXPORTING
             operation           = 'EDIT'
@@ -351,6 +352,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       lv_icon      TYPE string,
       lv_jump_type TYPE tadir-object,
       lv_jump_name TYPE tadir-obj_name,
+      lv_jump_prog TYPE progname,
       lv_obj_text  TYPE string,
       lv_obj_link  TYPE string,
       lv_msg_text  TYPE string,
@@ -377,7 +379,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     " Default jump is to source
     lv_jump_type = 'PROG'.
-    lv_jump_name = is_issue-program.
+    lv_jump_name = is_issue-obj_name.
+    lv_jump_prog = is_issue-program.
 
     CASE is_issue-obj_type.
       WHEN 'CLAS'.
@@ -411,8 +414,6 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
         lv_obj_text = |FUGR { is_issue-obj_name } { is_issue-obj_subtype }|.
       WHEN OTHERS.
         lv_obj_text = |{ is_issue-obj_type } { is_issue-obj_name }|.
-        lv_jump_type = is_issue-obj_type.
-        lv_jump_name = is_issue-obj_name.
     ENDCASE.
 
     lv_msg_text = escape(
@@ -429,7 +430,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_class = 'url' ).
 
     lv_obj_text = |{ lv_obj_text } [ @{ is_issue-line } ]|.
-    lv_obj_link = |{ c_action-jump_edit }?type={ lv_jump_type }&name={ lv_jump_name }&line={ is_issue-line }|.
+    lv_obj_link = |{ c_action-jump_edit }?type={ lv_jump_type }&name={ lv_jump_name }|
+               && |&line={ is_issue-line }&include={ lv_jump_prog }|.
 
     ri_html->add( |<li class="{ lv_class }">| ).
     ri_html->add_a(
