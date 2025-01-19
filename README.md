@@ -1,7 +1,7 @@
-![Version](https://img.shields.io/endpoint?url=https://shield.abap.space/version-shield-json/github/Marc-Bernard-Tools/abaplint-Ext-for-abapGit/src/zif_abaplint_abapgit_ext.intf.abap/c_version&label=Version&color=blue)
+![Version](https://img.shields.io/endpoint?url=https://shield.abappm.com/github/Marc-Bernard-Tools/abaplint-Ext-for-abapGit/src/zif_abaplint_abapgit_ext.intf.abap/c_version&label=Version&color=blue)
 
-[![License](https://img.shields.io/github/license/Marc-Bernard-Tools/abaplint-Ext-for-abapGit?label=License&color=green)](LICENSE)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg?color=green)](https://github.com/Marc-Bernard-Tools/.github/blob/main/CODE_OF_CONDUCT.md)
+[![License](https://img.shields.io/github/license/Marc-Bernard-Tools/abaplint-Ext-for-abapGit?label=License&color=success)](LICENSE)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg?color=success)](https://github.com/Marc-Bernard-Tools/.github/blob/main/CODE_OF_CONDUCT.md)
 [![REUSE Status](https://api.reuse.software/badge/github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit)](https://api.reuse.software/info/github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit)
 [![ClearlyDefined Score](https://img.shields.io/clearlydefined/score/git/github/marc-bernard-tools/abap-lint-ext-for-abapgit/e7046746c18809e14f129c1644b2c2bf537e58ac?label=ClearlyDefined%20Score)](https://clearlydefined.io/definitions/git/github/marc-bernard-tools/abap-lint-ext-for-abapgit/e7046746c18809e14f129c1644b2c2bf537e58ac)
 
@@ -9,7 +9,7 @@
 
 View [abaplint](https://abaplint.org/) results and detailed findings directly in [abapGit](https://github.com/abapGit/abapGit). 
 
-Made by [Marc Bernard Tools](https://marcbernardtools.com/) giving back to the [SAP Community](https://community.sap.com/)
+Made by [Marc Bernard Tools](https://marcbernardtools.com/) giving back to the [SAP Community](https://community.sap.com/).
 
 NO WARRANTIES, [MIT License](LICENSE)
 
@@ -51,11 +51,12 @@ Optionally, you can sort the results by object, location, or error code. You can
 
 ### Prerequisites
 
-1. SAP Basis 7.02 or higher
+## Prerequisites
 
-2. abapGit needs to be installed
-
-3. abaplint must be installed and given access to your GitHub repository.
+- SAP Basis 7.02 or higher
+- [abapGit](https://github.com/abapGit/abapGit) developer version 
+- [Exit Factory for abapGit](https://github.com/Marc-Bernard-Tools/Exit-Factory-for-abapGit) 
+- abaplint must be installed and given access to your GitHub repository.
 
    - Install abaplint
 
@@ -69,33 +70,11 @@ Optionally, you can sort the results by object, location, or error code. You can
 
      Get the latest default from [schema.abapgit.org](https://schema.abaplint.org/default.json)
 
-### Repository
+### Installation
 
-You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit. We recommend using package `$ABAPGIT-EXT-ABAPLINT`.
+You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for `https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit`. 
 
-### User Exits
-
-Implement abapGit [user exits](https://docs.abapgit.org/ref-exits.html) [`wall_message_repo`](https://docs.abapgit.org/ref-exits.html#wall_message_repo) and [`on_event`](https://docs.abapgit.org/ref-exits.html#on_event) as follows:
-
-```abap
-  METHOD zif_abapgit_exit~wall_message_repo.
-
-    zcl_abaplint_abapgit_ext_exit=>get_instance( )->wall_message_repo(
-      is_repo_meta = is_repo_meta
-      ii_html      = ii_html ).
-
-  ENDMETHOD.
-```
-
-```abap
-  METHOD zif_abapgit_exit~on_event.
-
-    IF rs_handled IS INITIAL.
-      rs_handled = zcl_abaplint_abapgit_ext_exit=>get_instance( )->on_event( ii_event ).
-    ENDIF.
-
-  ENDMETHOD.
-```
+Recommended SAP package: `$ABAPGIT-EXT-ABAPLINT`.
 
 ### SSL and Certificates
 
@@ -107,10 +86,10 @@ All contributions are welcome! Read our [Contribution Guidelines](CONTRIBUTING.m
 
 ## About
 
-Made with :heart: in Canada
+Made with ❤️ in Canada
 
-Copyright 2021 Marc Bernard <https://marcbernardtools.com/>
+Copyright 2025 Marc Bernard <https://marcbernardtools.com/>
 
-Follow [@marcfbe](https://twitter.com/marcfbe) on Twitter
+Follow [@marcf.be](https://bsky.app/profile/marcf.be) on Bluesky and [@marcfbe](https://linkedin.com/in/marcfbe) on LinkedIn
 
 <p><a href="https://marcbernardtools.com/"><img width="160" height="65" src="https://marcbernardtools.com/info/MBT_Logo_640x250_on_Gray.png" alt="MBT Logo"></a></p>
