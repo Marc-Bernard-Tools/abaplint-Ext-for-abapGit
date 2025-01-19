@@ -47,10 +47,6 @@ Optionally, you can sort the results by object, location, or error code. You can
 
 ![findings1](img/findings_error_2.png)
 
-## Installation
-
-### Prerequisites
-
 ## Prerequisites
 
 - SAP Basis 7.02 or higher
@@ -70,13 +66,13 @@ Optionally, you can sort the results by object, location, or error code. You can
 
      Get the latest default from [schema.abapgit.org](https://schema.abaplint.org/default.json)
 
-### Installation
+## Installation
 
 You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for `https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit`. 
 
 Recommended SAP package: `$ABAPGIT-EXT-ABAPLINT`.
 
-### SSL and Certificates
+## SSL and Certificates
 
 The abaplint status is retrieved via `https://api.github.com/`. Therefore, a proper SSL configuration and certificates for `api.github.com` are required. See [SSL setup](https://docs.abapgit.org/guide-ssl-setup.html) for details.
 
