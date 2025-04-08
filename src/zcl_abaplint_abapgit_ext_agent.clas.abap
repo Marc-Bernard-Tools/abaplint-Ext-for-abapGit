@@ -72,7 +72,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT_EXT_AGENT IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -91,7 +91,7 @@ CLASS ZCL_ABAPLINT_ABAPGIT_EXT_AGENT IMPLEMENTATION.
       regex = '\.git$'
       with  = '' ).
 
-    mo_agent = zcl_abapgit_factory=>get_http_agent( ).
+    mo_agent = zcl_abapgit_http_agent=>create( ).
 
     mo_agent->global_headers( )->set(
       iv_key = 'Accept'

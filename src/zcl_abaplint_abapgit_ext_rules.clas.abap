@@ -191,7 +191,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
 
     IF mi_default_rules IS INITIAL.
 
-      li_agent = zcl_abapgit_factory=>get_http_agent( ).
+      li_agent = zcl_abapgit_http_agent=>create( ).
 
       TRY.
           mi_default_rules = li_agent->request( c_abaplint_host && c_abaplint_defaults )->json( ).
@@ -577,7 +577,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
 
   METHOD zif_abapgit_gui_menu_provider~get_menu.
 
-    CREATE OBJECT ro_toolbar.
+    ro_toolbar = zcl_abapgit_html_toolbar=>create( 'abaplint-ext-rules' ).
 
     ro_toolbar->add(
       iv_txt = 'Repo Rules'
@@ -605,7 +605,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
 
     ri_html->add( '<div class="repo">' ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
-                    io_repo               = mo_repo
+                    ii_repo               = mo_repo
                     iv_show_commit        = abap_false
                     iv_interactive_branch = abap_false ) ).
     ri_html->add( '</div>' ).

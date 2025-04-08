@@ -251,7 +251,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
       iv_chk = mv_view_source
       iv_act = c_action-toggle_view_source ).
 
-    CREATE OBJECT ro_toolbar.
+    ro_toolbar = zcl_abapgit_html_toolbar=>create( 'abaplint-ext-ui' ).
 
     ro_toolbar->add(
       iv_txt = 'Sort'
@@ -277,7 +277,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     ri_html->add( '<div class="repo">' ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
-                    io_repo               = mo_repo
+                    ii_repo               = mo_repo
                     iv_show_commit        = abap_false
                     iv_interactive_branch = abap_false ) ).
     ri_html->add( '</div>' ).
