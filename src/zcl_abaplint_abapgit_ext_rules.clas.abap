@@ -402,7 +402,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     DATA:
       lx_error       TYPE REF TO zcx_abapgit_ajson_error,
       lo_highlighter TYPE REF TO zcl_abapgit_syntax_highlighter,
-      lo_diff        TYPE REF TO zcl_abapgit_diff,
+      li_diff        TYPE REF TO zif_abapgit_diff,
       lt_diffs       TYPE zif_abapgit_definitions=>ty_diffs_tt.
 
     FIELD-SYMBOLS
@@ -412,25 +412,21 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
 
     TRY.
 * TODO: With trailing comma
-**        CREATE OBJECT lo_diff
-**          EXPORTING
-**            iv_new = zcl_abapgit_convert=>string_to_xstring(
 **              ii_rules_left->stringify(
 **                iv_indent         = 2
 **                iv_trailing_comma = abap_true ) )
-**            iv_old = zcl_abapgit_convert=>string_to_xstring(
+**
 **              ii_rules_right->stringify(
 **                iv_indent         = 2
 **                iv_trailing_comma = abap_true ) ).
-        CREATE OBJECT lo_diff
-          EXPORTING
-            iv_old = zcl_abapgit_convert=>string_to_xstring( ii_rules_left->stringify( 2 ) )
-            iv_new = zcl_abapgit_convert=>string_to_xstring( ii_rules_right->stringify( 2 ) ).
+        li_diff = zcl_abapgit_diff_factory=>get( )->create(
+          iv_old = zcl_abapgit_convert=>string_to_xstring( ii_rules_left->stringify( 2 ) )
+          iv_new = zcl_abapgit_convert=>string_to_xstring( ii_rules_right->stringify( 2 ) ) ).
       CATCH zcx_abapgit_ajson_error INTO lx_error.
         zcx_abapgit_exception=>raise_with_text( lx_error ).
     ENDTRY.
 
-    lt_diffs = lo_diff->get( ).
+    lt_diffs = li_diff->get( ).
 
     lo_highlighter = zcl_abapgit_syntax_factory=>create( 'rules.json' ).
 
