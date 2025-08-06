@@ -299,6 +299,13 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
         IF lv_exists = abap_false.
           result->delete( |/rules/{ lv_rule }/severity| ).
         ENDIF.
+
+        " If exclude is not set, remove it from default
+        lv_exists = ii_rules_left->exists( |/rules/{ lv_rule }/exclude| ).
+
+        IF lv_exists = abap_false.
+          result->delete( |/rules/{ lv_rule }/exclude| ).
+        ENDIF.
       ENDIF.
     ENDLOOP.
 
