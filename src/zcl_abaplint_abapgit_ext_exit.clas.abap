@@ -200,7 +200,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lv_style   TYPE string,
       lv_act     TYPE string,
       lv_msg     TYPE string,
-      lv_summary TYPE string.
+      lv_display TYPE string.
 
     result = zcl_abapgit_html=>create( ).
 
@@ -261,19 +261,20 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lv_msg = |{ is_check_run-app } - { is_check_run-name }|.
     ENDIF.
 
-    lv_summary = is_check_run-summary.
-    IF lv_summary IS NOT INITIAL.
-      REPLACE 'First 50 annotations shown, ' IN lv_summary WITH ''.
+    lv_display = is_check_run-display.
+    IF lv_display IS NOT INITIAL.
+      REPLACE 'First 50 annotations shown, ' IN lv_display WITH ''.
 
       lv_act = |{ c_action-go_abaplint }?| &&
                |key={ iv_key }&checkrun={ is_check_run-id }&total={ is_check_run-count_total }|.
 
       " todo, maybe better to show link only for failures
-      lv_summary = result->a(
-        iv_txt = lv_summary
-        iv_act = lv_act ).
+      lv_display = result->a(
+        iv_txt   = lv_display
+        iv_act   = lv_act
+        iv_title = is_check_run-summary ).
 
-      lv_msg = |{ lv_msg }: { lv_summary }|.
+      lv_msg = |{ lv_msg }: { lv_display }|.
     ENDIF.
 
     result->add( lv_msg ).

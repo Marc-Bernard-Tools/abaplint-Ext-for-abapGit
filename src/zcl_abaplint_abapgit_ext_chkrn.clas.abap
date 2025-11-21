@@ -25,6 +25,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
         id          TYPE string,
         url         TYPE string,
         summary     TYPE string,
+        display     TYPE string,
         count_shown TYPE i,
         count_total TYPE i,
       END OF ty_check_run.
@@ -41,7 +42,6 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
         VALUE(rs_check_run) TYPE ty_check_run
       RAISING
         zcx_abapgit_exception.
-
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -49,16 +49,74 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
       mv_url    TYPE string,
       mv_commit TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1.
 
+    METHODS format_summary
+      IMPORTING
+        !iv_summary       TYPE string
+      RETURNING
+        VALUE(rv_summary) TYPE string.
+
+    METHODS format_count
+      IMPORTING
+        !iv_summary     TYPE string
+      RETURNING
+        VALUE(rv_count) TYPE string.
+
+    METHODS format_display
+      IMPORTING
+        !iv_summary       TYPE string
+      RETURNING
+        VALUE(rv_display) TYPE string.
+
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
 
 
   METHOD constructor.
     mv_url    = iv_url.
     mv_commit = iv_commit.
+  ENDMETHOD.
+
+
+  METHOD format_count.
+
+    DATA lv_msg TYPE string ##NEEDED.
+
+    SPLIT iv_summary AT space INTO rv_count lv_msg.
+
+  ENDMETHOD.
+
+
+  METHOD format_display.
+
+    DATA lv_count TYPE string.
+
+    rv_display = iv_summary.
+
+    " Remove version
+    REPLACE REGEX ', abaplint.*' IN rv_display WITH ''.
+
+    " Get count of normal objects, not dependencies
+    FIND REGEX '"normal":([0-9]*)' IN rv_display SUBMATCHES lv_count.
+
+    REPLACE REGEX '\{.*\}' IN rv_display WITH lv_count.
+
+  ENDMETHOD.
+
+
+  METHOD format_summary.
+
+    rv_summary = iv_summary.
+
+    " Remove link to https://github.com/apps/abaplint/installations/new
+    REPLACE REGEX ', \[adjust installations\].*' IN rv_summary WITH ''.
+
+    REPLACE ALL OCCURRENCES OF '"' IN rv_summary WITH ` `.
+    REPLACE ALL OCCURRENCES OF '{' IN rv_summary WITH ``.
+    REPLACE ALL OCCURRENCES OF '}' IN rv_summary WITH `,`.
+
   ENDMETHOD.
 
 
@@ -106,15 +164,13 @@ CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
               zcx_abapgit_exception=>raise( rs_check_run-summary ).
             ENDIF.
 
-            SPLIT rs_check_run-summary AT space INTO lv_count lv_msg.
-            rs_check_run-count_total = lv_count.
-
             REPLACE ALL OCCURRENCES OF
               cl_abap_char_utilities=>newline && cl_abap_char_utilities=>newline
               IN rs_check_run-summary WITH `, `.
 
-            " Remove link to https://github.com/apps/abaplint/installations/new
-            REPLACE REGEX ', \[adjust installations\].*' IN rs_check_run-summary WITH ''.
+            rs_check_run-count_total = format_count( rs_check_run-summary ).
+            rs_check_run-display     = format_display( rs_check_run-summary ).
+            rs_check_run-summary     = format_summary( rs_check_run-summary ).
 
             EXIT.
 
