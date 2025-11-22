@@ -71,7 +71,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -96,12 +96,13 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
     rv_display = iv_summary.
 
     " Remove version
-    REPLACE REGEX ', abaplint.*' IN rv_display WITH ''.
+    REPLACE REGEX ', abaplint.*' IN rv_display WITH '' ##REGEX_POSIX.
 
     " Get count of normal objects, not dependencies
-    FIND REGEX '"normal":([0-9]*)' IN rv_display SUBMATCHES lv_count.
-
-    REPLACE REGEX '\{.*\}' IN rv_display WITH lv_count.
+    FIND REGEX '"normal":([0-9]*)' IN rv_display SUBMATCHES lv_count ##REGEX_POSIX.
+    IF sy-subrc = 0.
+      REPLACE REGEX '\{.*\}' IN rv_display WITH lv_count ##REGEX_POSIX.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -111,7 +112,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
     rv_summary = iv_summary.
 
     " Remove link to https://github.com/apps/abaplint/installations/new
-    REPLACE REGEX ', \[adjust installations\].*' IN rv_summary WITH ''.
+    REPLACE REGEX ', \[adjust installations\].*' IN rv_summary WITH '' ##REGEX_POSIX.
 
     REPLACE ALL OCCURRENCES OF '"' IN rv_summary WITH ` `.
     REPLACE ALL OCCURRENCES OF '{' IN rv_summary WITH ``.
@@ -128,7 +129,6 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
       lt_check_runs TYPE TABLE OF string,
       lv_check_run  TYPE string,
       lv_msg        TYPE string,
-      lv_count      TYPE string,
       lv_app        TYPE string,
       lv_name       TYPE string.
 
