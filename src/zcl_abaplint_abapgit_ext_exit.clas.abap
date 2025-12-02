@@ -261,16 +261,13 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lv_msg = |{ is_check_run-app } - { is_check_run-name }|.
     ENDIF.
 
-    lv_display = is_check_run-display.
-    IF lv_display IS NOT INITIAL.
-      REPLACE 'First 50 annotations shown, ' IN lv_display WITH ''.
-
+    IF is_check_run-display IS NOT INITIAL.
       lv_act = |{ c_action-go_abaplint }?| &&
-               |key={ iv_key }&checkrun={ is_check_run-id }&total={ is_check_run-count_total }|.
+               |key={ iv_key }&checkrun={ is_check_run-id }&total={ is_check_run-count_issues }|.
 
       " todo, maybe better to show link only for failures
       lv_display = result->a(
-        iv_txt   = lv_display
+        iv_txt   = is_check_run-display
         iv_act   = lv_act
         iv_title = is_check_run-summary ).
 

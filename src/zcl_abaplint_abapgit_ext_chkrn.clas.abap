@@ -18,16 +18,18 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
 
     TYPES:
       BEGIN OF ty_check_run,
-        app         TYPE string,
-        status      TYPE string,
-        conclusion  TYPE string,
-        name        TYPE string,
-        id          TYPE string,
-        url         TYPE string,
-        summary     TYPE string,
-        display     TYPE string,
-        count_shown TYPE i,
-        count_total TYPE i,
+        app           TYPE string,
+        version       TYPE string,
+        status        TYPE string,
+        conclusion    TYPE string,
+        name          TYPE string,
+        id            TYPE string,
+        url           TYPE string,
+        summary       TYPE string,
+        display       TYPE string,
+        count_issues  TYPE i,
+        count_objects TYPE i,
+        count_deps    TYPE i,
       END OF ty_check_run.
 
     METHODS constructor
@@ -42,6 +44,7 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
         VALUE(rs_check_run) TYPE ty_check_run
       RAISING
         zcx_abapgit_exception.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -49,23 +52,9 @@ CLASS zcl_abaplint_abapgit_ext_chkrn DEFINITION
       mv_url    TYPE string,
       mv_commit TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1.
 
-    METHODS format_summary
-      IMPORTING
-        !iv_summary       TYPE string
-      RETURNING
-        VALUE(rv_summary) TYPE string.
-
-    METHODS format_count
-      IMPORTING
-        !iv_summary     TYPE string
-      RETURNING
-        VALUE(rv_count) TYPE string.
-
-    METHODS format_display
-      IMPORTING
-        !iv_summary       TYPE string
-      RETURNING
-        VALUE(rv_display) TYPE string.
+    METHODS format
+      CHANGING
+        cs_check_run TYPE ty_check_run.
 
 ENDCLASS.
 
@@ -80,43 +69,77 @@ CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD format_count.
+  METHOD format.
 
-    DATA lv_msg TYPE string ##NEEDED.
+    DATA lv_count TYPE string ##NEEDED.
 
-    SPLIT iv_summary AT space INTO rv_count lv_msg.
+    REPLACE ALL OCCURRENCES OF
+      cl_abap_char_utilities=>newline && cl_abap_char_utilities=>newline
+      IN cs_check_run-summary WITH `, `.
 
-  ENDMETHOD.
+    REPLACE 'First 50 annotations shown, ' IN cs_check_run-summary WITH ''.
+    REPLACE ALL OCCURRENCES OF '"' IN cs_check_run-summary WITH ''.
 
-
-  METHOD format_display.
-
-    DATA lv_count TYPE string.
-
-    rv_display = iv_summary.
-
-    " Remove version
-    REPLACE REGEX ', abaplint.*' IN rv_display WITH '' ##REGEX_POSIX.
-
-    " Get count of normal objects, not dependencies
-    FIND REGEX '"normal":([0-9]*)' IN rv_display SUBMATCHES lv_count ##REGEX_POSIX.
-    IF sy-subrc = 0.
-      REPLACE REGEX '\{.*\}' IN rv_display WITH lv_count ##REGEX_POSIX.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD format_summary.
-
-    rv_summary = iv_summary.
+    FIND REGEX 'abaplint ([0-9]+\.[0-9]+\.[0-9]+)' IN cs_check_run-summary
+      SUBMATCHES cs_check_run-version ##REGEX_POSIX.
 
     " Remove link to https://github.com/apps/abaplint/installations/new
-    REPLACE REGEX ', \[adjust installations\].*' IN rv_summary WITH '' ##REGEX_POSIX.
+    REPLACE REGEX ', \[adjust installations\].*' IN cs_check_run-summary WITH '' ##REGEX_POSIX.
+    " Remove markdown table with detailed findings
+    REPLACE REGEX '\|.*\|,' IN cs_check_run-summary WITH '' ##REGEX_POSIX.
 
-    REPLACE ALL OCCURRENCES OF '"' IN rv_summary WITH ` `.
-    REPLACE ALL OCCURRENCES OF '{' IN rv_summary WITH ``.
-    REPLACE ALL OCCURRENCES OF '}' IN rv_summary WITH `,`.
+    " 14 issues found
+    FIND REGEX '([0-9]+) issues found' IN cs_check_run-summary SUBMATCHES lv_count ##REGEX_POSIX.
+    IF sy-subrc = 0.
+      cs_check_run-count_issues = lv_count.
+    ENDIF.
+
+    " abaplint <= 2.113
+    " {"total":758,"normal":10,"dependencies":748} objects analyzed
+    FIND REGEX 'total:([0-9]+)' IN cs_check_run-summary SUBMATCHES lv_count ##REGEX_POSIX.
+    IF sy-subrc = 0.
+      cs_check_run-count_objects = lv_count.
+    ENDIF.
+    FIND REGEX 'dependencies:([0-9]+)' IN cs_check_run-summary SUBMATCHES lv_count ##REGEX_POSIX.
+    IF sy-subrc = 0.
+      cs_check_run-count_deps = lv_count.
+    ENDIF.
+
+    " abaplint >= 2.114
+    " 917 objects analyzed, including 749 dependencies
+    FIND REGEX '([0-9]+) objects analyzed' IN cs_check_run-summary SUBMATCHES lv_count ##REGEX_POSIX.
+    IF sy-subrc = 0.
+      cs_check_run-count_objects = lv_count.
+    ENDIF.
+    FIND REGEX '([0-9]+) dependencies' IN cs_check_run-summary SUBMATCHES lv_count ##REGEX_POSIX.
+    IF sy-subrc = 0.
+      cs_check_run-count_deps = lv_count.
+    ENDIF.
+
+    cs_check_run-display = |{ cs_check_run-count_issues NUMBER = USER } |.
+
+    IF cs_check_run-count_issues = 1.
+      cs_check_run-display  = cs_check_run-display && 'issue'.
+    ELSE.
+      cs_check_run-display  = cs_check_run-display && 'issues'.
+    ENDIF.
+
+    cs_check_run-display = cs_check_run-display && |, { cs_check_run-count_objects NUMBER = USER } |.
+
+    IF cs_check_run-count_objects = 1.
+      cs_check_run-display = cs_check_run-display && 'object analyzed'.
+    ELSE.
+      cs_check_run-display = cs_check_run-display && 'objects analyzed'.
+    ENDIF.
+
+    IF cs_check_run-count_deps > 0.
+      cs_check_run-display = cs_check_run-display && | ({ cs_check_run-count_deps NUMBER = USER }|.
+      IF cs_check_run-count_deps = 1.
+        cs_check_run-display = cs_check_run-display && ' dependency)'.
+      ELSE.
+        cs_check_run-display = cs_check_run-display && ' dependencies)'.
+      ENDIF.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -151,28 +174,22 @@ CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
           " Only interested in abaplint run (not builds or abalint/observations)
           IF lv_app = 'abaplint' AND lv_name = 'abaplint'.
 
-            rs_check_run-app         = lv_app.
-            rs_check_run-name        = lv_name.
-            rs_check_run-id          = li_json->get( |/check_runs/{ lv_check_run }/id| ).
-            rs_check_run-status      = li_json->get( |/check_runs/{ lv_check_run }/status| ).
-            rs_check_run-conclusion  = li_json->get( |/check_runs/{ lv_check_run }/conclusion| ).
-            rs_check_run-url         = li_json->get( |/check_runs/{ lv_check_run }/html_url| ).
-            rs_check_run-summary     = li_json->get( |/check_runs/{ lv_check_run }/output/summary| ).
-            rs_check_run-count_shown = li_json->get( |/check_runs/{ lv_check_run }/output/annotation_count| ).
+            rs_check_run-app          = lv_app.
+            rs_check_run-name         = lv_name.
+            rs_check_run-id           = li_json->get( |/check_runs/{ lv_check_run }/id| ).
+            rs_check_run-status       = li_json->get( |/check_runs/{ lv_check_run }/status| ).
+            rs_check_run-conclusion   = li_json->get( |/check_runs/{ lv_check_run }/conclusion| ).
+            rs_check_run-url          = li_json->get( |/check_runs/{ lv_check_run }/html_url| ).
+            rs_check_run-summary      = li_json->get( |/check_runs/{ lv_check_run }/output/summary| ).
+            rs_check_run-count_issues = li_json->get( |/check_runs/{ lv_check_run }/output/annotation_count| ).
 
             IF rs_check_run-summary CS 'Error'.
               zcx_abapgit_exception=>raise( rs_check_run-summary ).
             ENDIF.
 
-            REPLACE ALL OCCURRENCES OF
-              cl_abap_char_utilities=>newline && cl_abap_char_utilities=>newline
-              IN rs_check_run-summary WITH `, `.
+            format( CHANGING cs_check_run = rs_check_run ).
 
-            rs_check_run-count_total = format_count( rs_check_run-summary ).
-            rs_check_run-display     = format_display( rs_check_run-summary ).
-            rs_check_run-summary     = format_summary( rs_check_run-summary ).
-
-            EXIT.
+            EXIT. " >>>>
 
           ENDIF.
 
