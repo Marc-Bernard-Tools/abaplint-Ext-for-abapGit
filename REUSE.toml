@@ -1,0 +1,6 @@
+version = 1
+
+[[annotations]]
+path = "**/*"
+SPDX-FileCopyrightText = "2025 Marc Bernard <https://marcbernardtools.com/>"
+SPDX-License-Identifier = "MIT"
