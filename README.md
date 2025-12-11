@@ -47,15 +47,12 @@ Optionally, you can sort the results by object, location, or error code. You can
 
 ![findings1](img/findings_error_2.png)
 
-## Installation
+## Prerequisites
 
-### Prerequisites
-
-1. SAP Basis 7.02 or higher
-
-2. abapGit needs to be installed
-
-3. abaplint must be installed and given access to your GitHub repository.
+- SAP Basis 7.02 or higher
+- [abapGit](https://github.com/abapGit/abapGit) developer version 
+- [Exit Factory for abapGit](https://github.com/Marc-Bernard-Tools/Exit-Factory-for-abapGit) 
+- abaplint must be installed and given access to your GitHub repository.
 
    - Install abaplint
 
@@ -69,35 +66,13 @@ Optionally, you can sort the results by object, location, or error code. You can
 
      Get the latest default from [schema.abapgit.org](https://schema.abaplint.org/default.json)
 
-### Repository
+## Installation
 
-You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for https://github.com/Marc-Bernard-Tools/ABAP-Lint-Ext-for-abapGit. We recommend using package `$ABAPGIT-EXT-ABAPLINT`.
+You can install the repository using [abapGit](https://github.com/abapGit/abapGit) creating a new online repository for `https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit`. 
 
-### User Exits
+Recommended SAP package: `$ABAPGIT-EXT-ABAPLINT`.
 
-Implement abapGit [user exits](https://docs.abapgit.org/ref-exits.html) [`wall_message_repo`](https://docs.abapgit.org/ref-exits.html#wall_message_repo) and [`on_event`](https://docs.abapgit.org/ref-exits.html#on_event) as follows:
-
-```abap
-  METHOD zif_abapgit_exit~wall_message_repo.
-
-    zcl_abaplint_abapgit_ext_exit=>get_instance( )->wall_message_repo(
-      is_repo_meta = is_repo_meta
-      ii_html      = ii_html ).
-
-  ENDMETHOD.
-```
-
-```abap
-  METHOD zif_abapgit_exit~on_event.
-
-    IF rs_handled IS INITIAL.
-      rs_handled = zcl_abaplint_abapgit_ext_exit=>get_instance( )->on_event( ii_event ).
-    ENDIF.
-
-  ENDMETHOD.
-```
-
-### SSL and Certificates
+## SSL and Certificates
 
 The abaplint status is retrieved via `https://api.github.com/`. Therefore, a proper SSL configuration and certificates for `api.github.com` are required. See [SSL setup](https://docs.abapgit.org/guide-ssl-setup.html) for details.
 

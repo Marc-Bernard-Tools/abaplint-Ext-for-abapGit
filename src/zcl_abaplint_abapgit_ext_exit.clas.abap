@@ -1,27 +1,31 @@
 CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
   PUBLIC
+  INHERITING FROM zcl_abapgit_user_exit_super
   FINAL
-  CREATE PRIVATE.
+  CREATE PUBLIC.
 
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
   PUBLIC SECTION.
 
-    CLASS-METHODS get_instance
+    CONSTANTS c_version TYPE string VALUE '2.0.0' ##NEEDED.
+
+    TYPES ty_sha1 TYPE c LENGTH 40.
+
+    METHODS:
+      zif_abapgit_user_exit~on_event REDEFINITION,
+      zif_abapgit_user_exit~wall_message_repo REDEFINITION.
+
+    CLASS-METHODS get_last_url
       RETURNING
-        VALUE(ro_instance) TYPE REF TO zcl_abaplint_abapgit_ext_exit.
-    METHODS on_event
-      IMPORTING
-        !ii_event         TYPE REF TO zif_abapgit_gui_event
-      RETURNING
-        VALUE(rs_handled) TYPE zif_abapgit_gui_event_handler=>ty_handling_result
-      RAISING
-        zcx_abapgit_exception.
-    METHODS wall_message_repo
-      IMPORTING
-        !is_repo_meta TYPE zif_abapgit_persistence=>ty_repo
-        !ii_html      TYPE REF TO zif_abapgit_html.
-    METHODS get_last_url
-      RETURNING
-        VALUE(rv_url) TYPE string.
+        VALUE(result) TYPE string.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -34,14 +38,16 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
 
     CONSTANTS:
       BEGIN OF c_action,
-        go_abaplint TYPE string VALUE 'go_abaplint',
+        go_abaplint TYPE string VALUE 'mbt_go_abaplint',
       END OF c_action.
+
     CONSTANTS:
       BEGIN OF c_git_status,
         queued      TYPE string VALUE 'queued',
         in_progress TYPE string VALUE 'in_progress',
         completed   TYPE string VALUE 'completed',
       END OF c_git_status.
+
     CONSTANTS:
       BEGIN OF c_git_conclusion,
         neutral         TYPE string VALUE 'neutral',
@@ -53,17 +59,22 @@ CLASS zcl_abaplint_abapgit_ext_exit DEFINITION
         stale           TYPE string VALUE 'stale',
         timed_out       TYPE string VALUE 'timed_out',
       END OF c_git_conclusion.
-    CLASS-DATA go_instance TYPE REF TO zcl_abaplint_abapgit_ext_exit.
-    DATA:
-      mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit.
-    DATA mv_last_url TYPE string.
+
+    CLASS-DATA gv_last_url TYPE string.
+
+    DATA mt_wall TYPE HASHED TABLE OF ty_wall WITH UNIQUE KEY commit.
+
+    METHODS _message_start
+      RETURNING
+        VALUE(result) TYPE string.
 
     METHODS _wall_message_abaplint
       IMPORTING
-        !iv_key        TYPE zif_abapgit_persistence=>ty_repo-key
-        !is_check_run  TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run
+        !iv_key       TYPE zif_abapgit_persistence=>ty_repo-key
+        !is_check_run TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run
       RETURNING
-        VALUE(ri_html) TYPE REF TO zif_abapgit_html.
+        VALUE(result) TYPE REF TO zif_abapgit_html.
+
 ENDCLASS.
 
 
@@ -71,20 +82,12 @@ ENDCLASS.
 CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
 
 
-  METHOD get_instance.
-    IF go_instance IS INITIAL.
-      CREATE OBJECT go_instance.
-    ENDIF.
-    ro_instance = go_instance.
-  ENDMETHOD.
-
-
   METHOD get_last_url.
-    rv_url = mv_last_url.
+    result = gv_last_url.
   ENDMETHOD.
 
 
-  METHOD on_event.
+  METHOD zif_abapgit_user_exit~on_event.
 
     IF ii_event->mv_action = c_action-go_abaplint.
       rs_handled-page  = zcl_abaplint_abapgit_ext_ui=>create(
@@ -97,12 +100,13 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD wall_message_repo.
+  METHOD zif_abapgit_user_exit~wall_message_repo.
 
     DATA:
       lx_error       TYPE REF TO zcx_abapgit_exception,
       lo_repo_online TYPE REF TO zcl_abapgit_repo_online,
-      lv_commit      TYPE zif_abaplint_abapgit_ext=>ty_sha1,
+      lt_files       TYPE zif_abapgit_git_definitions=>ty_files_tt,
+      lv_commit      TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1,
       ls_wall        TYPE ty_wall,
       lo_check_run   TYPE REF TO zcl_abaplint_abapgit_ext_chkrn,
       ls_check_run   TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run,
@@ -115,17 +119,27 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     TRY.
         lo_repo_online ?= zcl_abapgit_repo_srv=>get_instance( )->get( is_repo_meta-key ).
 
+        " abaplint is only available on GitHub
+        IF lo_repo_online->get_url( ) NS 'github.com'.
+          RETURN.
+        ENDIF.
+
         lv_commit = lo_repo_online->get_current_remote( ).
+
+        " Check if repo contains abaplint rules
+        lt_files = lo_repo_online->get_files_remote( ).
+        LOOP AT lt_files TRANSPORTING NO FIELDS USING KEY file_path
+          WHERE path = '/' AND filename CP 'abaplint*json'.
+          EXIT.
+        ENDLOOP.
+        IF sy-subrc <> 0.
+          RETURN.
+        ENDIF.
 
       CATCH zcx_abapgit_exception.
         " If this fails, AG will show an error on the repo view anyway
         RETURN.
     ENDTRY.
-
-    " abaplint is only available on GitHub
-    IF lo_repo_online->get_url( ) NS 'github.com'.
-      RETURN.
-    ENDIF.
 
     READ TABLE mt_wall INTO ls_wall WITH TABLE KEY commit = lv_commit.
     IF sy-subrc <> 0.
@@ -139,11 +153,16 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
           ls_check_run = lo_check_run->get( ).
 
           IF ls_check_run IS INITIAL.
+            ii_html->add( _message_start( ) ).
+            ii_html->add( 'No abaplint check run found.' ).
+            ii_html->add( '</div>' ).
             RETURN.
           ENDIF.
 
         CATCH zcx_abapgit_exception INTO lx_error.
-          ii_html->add( |<div>{ lx_error->get_text( ) }</div>| ).
+          ii_html->add( _message_start( ) ).
+          ii_html->add( lx_error->get_text( ) ).
+          ii_html->add( '</div>' ).
           RETURN.
       ENDTRY.
 
@@ -165,8 +184,13 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
     ii_html->add( ls_wall-html->render( ) ).
 
     " Remember URL of last shown check run
-    mv_last_url = ls_wall-url.
+    gv_last_url = ls_wall-url.
 
+  ENDMETHOD.
+
+
+  METHOD _message_start.
+    result = '<div id="abaplint-message" style="padding-right:15px;margin-top:10px;float:left">'.
   ENDMETHOD.
 
 
@@ -176,25 +200,23 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lv_style   TYPE string,
       lv_act     TYPE string,
       lv_msg     TYPE string,
-      lv_summary TYPE string.
+      lv_display TYPE string.
+
+    result = zcl_abapgit_html=>create( ).
+
+    result->add( _message_start( ) ).
 
     lv_act = |{ zif_abapgit_definitions=>c_action-url }?url={ is_check_run-url }|.
 
-    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
-
-    lv_style = 'padding-right: 10px; margin-top: 10px; float: left;'.
-
-    ri_html->add( |<div id="abaplint-message" style="{ lv_style }">| ).
-
     CASE is_check_run-status.
       WHEN c_git_status-queued.
-        ri_html->add_a(
+        result->add_a(
           iv_txt = zcl_abapgit_html=>icon(
                      iv_name = 'circle-solid'
                      iv_hint = is_check_run-status )
           iv_act = lv_act ).
       WHEN c_git_status-in_progress.
-        ri_html->add_a(
+        result->add_a(
           iv_txt = zcl_abapgit_html=>icon(
                      iv_name  = 'circle-solid'
                      iv_class = 'warning'
@@ -203,13 +225,13 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       WHEN c_git_status-completed.
         CASE is_check_run-conclusion.
           WHEN c_git_conclusion-neutral.
-            ri_html->add_a(
+            result->add_a(
               iv_txt = zcl_abapgit_html=>icon(
                          iv_name = 'circle-solid'
                          iv_hint = is_check_run-conclusion )
               iv_act = lv_act ).
           WHEN c_git_conclusion-success.
-            ri_html->add_a(
+            result->add_a(
               iv_txt = zcl_abapgit_html=>icon(
                          iv_name  = 'check'
                          iv_class = 'success'
@@ -221,17 +243,17 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
             OR c_git_conclusion-skipped
             OR c_git_conclusion-stale
             OR c_git_conclusion-timed_out.
-            ri_html->add_a(
+            result->add_a(
               iv_txt  = zcl_abapgit_html=>icon(
-                         iv_name  = 'times-solid'
-                         iv_class = 'error'
-                         iv_hint  = is_check_run-conclusion )
+                iv_name  = 'times-solid'
+                iv_class = 'error'
+                iv_hint  = is_check_run-conclusion )
               iv_act = lv_act ).
           WHEN OTHERS.
-            ri_html->add( |Unexpected value "{ is_check_run-conclusion }" for "conclusion"| ).
+            result->add( |Unexpected value "{ is_check_run-conclusion }" for "conclusion"| ).
         ENDCASE.
       WHEN OTHERS.
-        ri_html->add( |Unexpected value "{ is_check_run-status }" for "status"| ).
+        result->add( |Unexpected value "{ is_check_run-status }" for "status"| ).
     ENDCASE.
 
     lv_msg = is_check_run-name.
@@ -239,23 +261,21 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lv_msg = |{ is_check_run-app } - { is_check_run-name }|.
     ENDIF.
 
-    lv_summary = is_check_run-summary.
-    IF lv_summary IS NOT INITIAL.
-      REPLACE 'First 50 annotations shown, ' IN lv_summary WITH ''.
-
+    IF is_check_run-display IS NOT INITIAL.
       lv_act = |{ c_action-go_abaplint }?| &&
-               |key={ iv_key }&checkrun={ is_check_run-id }&total={ is_check_run-count_total }|.
+               |key={ iv_key }&checkrun={ is_check_run-id }&total={ is_check_run-count_issues }|.
 
       " todo, maybe better to show link only for failures
-      lv_summary = ri_html->a(
-        iv_txt = lv_summary
-        iv_act = lv_act ).
+      lv_display = result->a(
+        iv_txt   = is_check_run-display
+        iv_act   = lv_act
+        iv_title = is_check_run-summary ).
 
-      lv_msg = |{ lv_msg }: { lv_summary }|.
+      lv_msg = |{ lv_msg }: { lv_display }|.
     ENDIF.
 
-    ri_html->add( lv_msg ).
-    ri_html->add( '</div>' ).
+    result->add( lv_msg ).
+    result->add( '</div>' ).
 
   ENDMETHOD.
 ENDCLASS.

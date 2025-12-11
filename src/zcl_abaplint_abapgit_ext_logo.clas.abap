@@ -3,6 +3,14 @@ CLASS zcl_abaplint_abapgit_ext_logo DEFINITION
   FINAL
   CREATE PUBLIC.
 
+************************************************************************
+* abaplint Extension for abapGit
+*
+* https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
+*
+* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* SPDX-License-Identifier: MIT
+************************************************************************
   PUBLIC SECTION.
 
     CONSTANTS c_logo TYPE string VALUE 'abaplint_logo.png'.
@@ -19,6 +27,7 @@ CLASS zcl_abaplint_abapgit_ext_logo DEFINITION
       RETURNING
         VALUE(rv_html) TYPE string.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
 
     CONSTANTS c_mime TYPE string VALUE 'ZABAPLINT_LOGO'.
@@ -27,7 +36,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_abapgit_ext_logo IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_ABAPGIT_EXT_LOGO IMPLEMENTATION.
 
 
   METHOD get_logo_html.
