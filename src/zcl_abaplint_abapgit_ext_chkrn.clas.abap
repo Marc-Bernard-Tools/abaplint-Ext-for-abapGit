@@ -60,7 +60,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -183,7 +183,8 @@ CLASS ZCL_ABAPLINT_ABAPGIT_EXT_CHKRN IMPLEMENTATION.
             rs_check_run-summary      = li_json->get( |/check_runs/{ lv_check_run }/output/summary| ).
             rs_check_run-count_issues = li_json->get( |/check_runs/{ lv_check_run }/output/annotation_count| ).
 
-            IF rs_check_run-summary CS 'Error'.
+            " Some general error and not abaplint findings
+            IF rs_check_run-summary CS 'error' AND rs_check_run-summary NS 'objects analyzed'.
               zcx_abapgit_exception=>raise( rs_check_run-summary ).
             ENDIF.
 
