@@ -89,7 +89,7 @@ CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
     mv_url = replace(
       val   = mv_url
       regex = '\.git$'
-      with  = '' ).
+      with  = '' ) ##REGEX_POSIX.
 
     mo_agent = zcl_abapgit_http_agent=>create( ).
 
@@ -114,11 +114,18 @@ CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
   METHOD get_annotations.
 
     DATA lv_url TYPE string.
+    DATA li_response TYPE REF TO zif_abapgit_http_response.
 
     " Get first 50 annotations which is the current max before paging (default = 30)
     lv_url = mv_url && |/check-runs/{ iv_check_run }/annotations?per_page={ c_max_annotations }|.
 
-    ri_json = mo_agent->request( lv_url )->json( ).
+    li_response = mo_agent->request( lv_url ).
+
+    IF li_response->is_ok( ) = abap_false.
+      zcx_abapgit_exception=>raise( |Error getting annotations: { li_response->code( ) }| ).
+    ENDIF.
+
+    ri_json = li_response->json( ).
 
   ENDMETHOD.
 
@@ -126,10 +133,17 @@ CLASS zcl_abaplint_abapgit_ext_agent IMPLEMENTATION.
   METHOD get_check_runs.
 
     DATA lv_url TYPE string.
+    DATA li_response TYPE REF TO zif_abapgit_http_response.
 
     lv_url = mv_url && |/commits/{ iv_commit }/check-runs|.
 
-    ri_json = mo_agent->request( lv_url )->json( ).
+    li_response = mo_agent->request( lv_url ).
+
+    IF li_response->is_ok( ) = abap_false.
+      zcx_abapgit_exception=>raise( |Error getting check runs: { li_response->code( ) }| ).
+    ENDIF.
+
+    ri_json = li_response->json( ).
 
   ENDMETHOD.
 
