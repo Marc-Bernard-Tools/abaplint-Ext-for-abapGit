@@ -39,11 +39,13 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
       BEGIN OF c_action,
         repo_rules    TYPE string VALUE 'mbt_repo_rules',
         default_rules TYPE string VALUE 'mbt_default_rules',
+        rules_schema  TYPE string VALUE 'mbt_rules_schema',
         diff          TYPE string VALUE 'mbt_diff',
       END OF c_action.
 
     CONSTANTS:
       c_abaplint_host     TYPE string VALUE 'https://schema.abaplint.org/',
+      c_abaplint_schema   TYPE string VALUE 'schema.json',
       c_abaplint_defaults TYPE string VALUE 'default.json'.
 
     DATA:
@@ -51,6 +53,7 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
       mv_page             TYPE string,
       mv_default_filename TYPE string,
       mi_default_rules    TYPE REF TO zif_abapgit_ajson,
+      mi_rules_schema     TYPE REF TO zif_abapgit_ajson,
       mv_repo_filename    TYPE string,
       mi_repo_rules       TYPE REF TO zif_abapgit_ajson.
 
@@ -60,6 +63,11 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
         zcx_abapgit_exception.
 
     METHODS get_default_rules
+      RAISING
+        zcx_abapgit_ajson_error
+        zcx_abapgit_exception.
+
+    METHODS get_rules_schema
       RAISING
         zcx_abapgit_ajson_error
         zcx_abapgit_exception.
@@ -102,7 +110,7 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
     METHODS render_rules
       IMPORTING
         iv_header     TYPE string
-        ii_rules      TYPE REF TO zif_abapgit_ajson
+        ii_json      TYPE REF TO zif_abapgit_ajson
       RETURNING
         VALUE(result) TYPE REF TO zif_abapgit_html
       RAISING
@@ -255,7 +263,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     " Removes end of line // comments
     SPLIT lv_json AT cl_abap_char_utilities=>newline INTO TABLE lt_json.
     LOOP AT lt_json INTO lv_json.
-      FIND REGEX '(.*)\/\/[^"]*$' IN lv_json IGNORING CASE SUBMATCHES lv_json.
+      FIND REGEX '(.*)\/\/[^"]*$' IN lv_json IGNORING CASE SUBMATCHES lv_json ##REGEX_POSIX.
       IF sy-subrc = 0.
         lv_warning = abap_true.
         MODIFY lt_json FROM lv_json.
@@ -321,6 +329,27 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
         result->setx( |/rules/{ lv_rule }: true| ).
       ENDIF.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_rules_schema.
+
+    DATA:
+      lx_error TYPE REF TO zcx_abapgit_ajson_error,
+      li_agent TYPE REF TO zif_abapgit_http_agent.
+
+    IF mi_rules_schema IS INITIAL.
+
+      li_agent = zcl_abapgit_http_agent=>create( ).
+
+      TRY.
+          mi_rules_schema = li_agent->request( c_abaplint_host && c_abaplint_schema )->json( ).
+        CATCH zcx_abapgit_ajson_error INTO lx_error.
+          zcx_abapgit_exception=>raise_with_text( lx_error ).
+      ENDTRY.
+
+    ENDIF.
 
   ENDMETHOD.
 
@@ -474,14 +503,14 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     result = zcl_abapgit_html=>create( ).
 
     TRY.
-        lv_source = ii_rules->stringify( 2 ).
+        lv_source = ii_json->stringify( 2 ).
       CATCH zcx_abapgit_ajson_error INTO lx_error.
         zcx_abapgit_exception=>raise_with_text( lx_error ).
     ENDTRY.
 
     SPLIT lv_source AT cl_abap_char_utilities=>newline INTO TABLE lt_source.
 
-    lo_highlighter = zcl_abapgit_syntax_factory=>create( 'rules.json' ).
+    lo_highlighter = zcl_abapgit_syntax_factory=>create( 'any.json' ).
 
     " Use same styles as diff pages. Number of columns and classes have to remain
     " although some columns are empty in order for the column selector to work
@@ -573,6 +602,11 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
         mv_page = c_action-diff.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
+      WHEN c_action-rules_schema.
+
+        mv_page = c_action-rules_schema.
+        rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
+
     ENDCASE.
 
   ENDMETHOD.
@@ -591,6 +625,9 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     )->add(
       iv_txt = 'Diff'
       iv_act = c_action-diff
+    )->add(
+      iv_txt = 'Schema'
+      iv_act = c_action-rules_schema
     )->add(
       iv_txt = 'Back'
       iv_act = zif_abapgit_definitions=>c_action-go_back ).
@@ -628,7 +665,7 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
               iv_filename = mv_repo_filename ) ).
             ri_html->add( render_rules(
               iv_header = 'REPOSITORY'
-              ii_rules  = mi_repo_rules ) ).
+              ii_json  = mi_repo_rules ) ).
 
           WHEN c_action-default_rules.
 
@@ -639,7 +676,18 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
               iv_filename = mv_default_filename ) ).
             ri_html->add( render_rules(
               iv_header = 'DEFAULT'
-              ii_rules  = mi_default_rules ) ).
+              ii_json  = mi_default_rules ) ).
+
+          WHEN c_action-rules_schema.
+
+            get_rules_schema( ).
+
+            ri_html->add( render_header(
+              iv_header   = 'Schema'
+              iv_filename = c_abaplint_schema ) ).
+            ri_html->add( render_rules(
+              iv_header = 'SCHEMA'
+              ii_json  = mi_rules_schema ) ).
 
           WHEN c_action-diff.
 

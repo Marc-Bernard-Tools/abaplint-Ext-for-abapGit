@@ -8,7 +8,7 @@ CLASS zcl_abaplint_abapgit_ext_logo DEFINITION
 *
 * https://github.com/Marc-Bernard-Tools/abaplint-Ext-for-abapGit
 *
-* Copyright 2023 Marc Bernard <https://marcbernardtools.com/>
+* Copyright 2025 Marc Bernard <https://marcbernardtools.com/>
 * SPDX-License-Identifier: MIT
 ************************************************************************
   PUBLIC SECTION.
@@ -36,7 +36,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT_EXT_LOGO IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit_ext_logo IMPLEMENTATION.
 
 
   METHOD get_logo_html.

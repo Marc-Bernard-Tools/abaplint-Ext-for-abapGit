@@ -82,6 +82,9 @@ CLASS zcl_abaplint_abapgit_ext_chkrn IMPLEMENTATION.
 
     FIND REGEX 'abaplint ([0-9]+\.[0-9]+\.[0-9]+)' IN cs_check_run-summary
       SUBMATCHES cs_check_run-version ##REGEX_POSIX.
+    IF sy-subrc <> 0.
+      cs_check_run-version = '(unknown version)'.
+    ENDIF.
 
     " Remove link to https://github.com/apps/abaplint/installations/new
     REPLACE REGEX ', \[adjust installations\].*' IN cs_check_run-summary WITH '' ##REGEX_POSIX.

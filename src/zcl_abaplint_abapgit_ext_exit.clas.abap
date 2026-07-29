@@ -106,7 +106,7 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
       lx_error       TYPE REF TO zcx_abapgit_exception,
       lo_repo_online TYPE REF TO zcl_abapgit_repo_online,
       lt_files       TYPE zif_abapgit_git_definitions=>ty_files_tt,
-      lv_commit      TYPE zcl_abaplint_abapgit_ext_exit=>ty_sha1,
+      lv_commit      TYPE ty_sha1,
       ls_wall        TYPE ty_wall,
       lo_check_run   TYPE REF TO zcl_abaplint_abapgit_ext_chkrn,
       ls_check_run   TYPE zcl_abaplint_abapgit_ext_chkrn=>ty_check_run,
