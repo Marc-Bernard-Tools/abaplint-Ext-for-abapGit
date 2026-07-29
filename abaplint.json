@@ -541,7 +541,7 @@
       "ignorePatterns": [],
       "importing": "^I._.+$",
       "patternKind": "required",
-      "returning": "^R._.+$",
+      "returning": "^R._.+|RESULT$",
       "severity": "Error"
     },
     "mix_returning": {
