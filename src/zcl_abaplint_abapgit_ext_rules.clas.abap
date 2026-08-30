@@ -252,7 +252,8 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     ENDDO.
 
     IF sy-index = 3. " app
-      " TODO: Example https://github.com/abap2UI5/abap2UI5/blob/main/abaplint-app.json
+      " TODO: Is this still a thing?
+      " Example https://github.com/abap2UI5/abap2UI5/pull/850/changes
       BREAK-POINT.
     ENDIF.
 
