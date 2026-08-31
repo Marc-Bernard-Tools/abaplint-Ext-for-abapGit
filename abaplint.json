@@ -9,6 +9,11 @@
       "files": "/src/**/*.*",
       "folder": "/deps2",
       "url": "https://github.com/abapGit/abapGit"
+    },
+    {
+      "files": "/src/**/*.*",
+      "folder": "/deps3",
+      "url": "https://github.com/Marc-Bernard-Tools/Exit-Factory-for-abapGit"
     }
   ],
   "global": {
