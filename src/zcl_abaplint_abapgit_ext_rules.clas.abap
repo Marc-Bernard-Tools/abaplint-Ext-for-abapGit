@@ -110,7 +110,7 @@ CLASS zcl_abaplint_abapgit_ext_rules DEFINITION
     METHODS render_rules
       IMPORTING
         iv_header     TYPE string
-        ii_json      TYPE REF TO zif_abapgit_ajson
+        ii_json       TYPE REF TO zif_abapgit_ajson
       RETURNING
         VALUE(result) TYPE REF TO zif_abapgit_html
       RAISING
@@ -252,9 +252,9 @@ CLASS zcl_abaplint_abapgit_ext_rules IMPLEMENTATION.
     ENDDO.
 
     IF sy-index = 3. " app
-      " TODO: Is this still a thing?
+      " TODO: Is this still a thing? Open an issue
       " Example https://github.com/abap2UI5/abap2UI5/pull/850/changes
-      BREAK-POINT.
+      ASSERT 0 = 1.
     ENDIF.
 
     mv_repo_filename = lv_filename.
