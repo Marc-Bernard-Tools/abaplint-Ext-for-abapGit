@@ -266,10 +266,17 @@ CLASS zcl_abaplint_abapgit_ext_exit IMPLEMENTATION.
                |key={ iv_key }&checkrun={ is_check_run-id }&total={ is_check_run-count_issues }|.
 
       " todo, maybe better to show link only for failures
-      lv_display = result->a(
-        iv_txt   = is_check_run-display
-        iv_act   = lv_act
-        iv_title = is_check_run-summary ).
+      IF zcl_abapgit_ui_factory=>get_frontend_services( )->is_webgui( ) = abap_true.
+        " WebGui doesn't like title with &gt;
+        lv_display = result->a(
+          iv_txt = is_check_run-display
+          iv_act = lv_act ).
+      ELSE.
+        lv_display = result->a(
+          iv_txt   = is_check_run-display
+          iv_act   = lv_act
+          iv_title = is_check_run-summary ).
+      ENDIF.
 
       lv_msg = |{ lv_msg }: { lv_display }|.
     ENDIF.
