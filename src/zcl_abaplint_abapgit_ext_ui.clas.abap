@@ -252,7 +252,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     ri_html->add( `<div class="repo">` ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
-                    io_repo               = mo_repo
+                    ii_repo               = mo_repo
                     iv_show_commit        = abap_false
                     iv_interactive_branch = abap_false ) ).
     ri_html->add( `</div>` ).
@@ -331,6 +331,7 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     DATA:
       ls_mtdkey    TYPE seocpdkey,
+      lv_subtype   TYPE string,
       lv_class     TYPE string,
       lv_icon      TYPE string,
       lv_jump_type TYPE tadir-object,
@@ -365,7 +366,8 @@ CLASS zcl_abaplint_abapgit_ext_ui IMPLEMENTATION.
 
     CASE is_issue-obj_type.
       WHEN 'CLAS'.
-        CASE to_lower( is_issue-obj_subtype ).
+        lv_subtype = to_lower( is_issue-obj_subtype ).
+        CASE lv_subtype.
           WHEN zif_abapgit_oo_object_fnc=>c_parts-locals_def.
             lv_obj_text = |CLAS { is_issue-obj_name } : Local Definitions|.
           WHEN zif_abapgit_oo_object_fnc=>c_parts-locals_imp.

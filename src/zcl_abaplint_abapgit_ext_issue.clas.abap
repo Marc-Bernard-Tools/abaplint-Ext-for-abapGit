@@ -199,9 +199,12 @@ CLASS zcl_abaplint_abapgit_ext_issue IMPLEMENTATION.
 
   METHOD _get_issue_clas.
 
+    DATA lv_subtype TYPE string.
+
     MOVE-CORRESPONDING is_issue TO rs_issue.
 
-    CASE to_lower( is_issue-obj_subtype ).
+    lv_subtype = to_lower( is_issue-obj_subtype ).
+    CASE lv_subtype.
       WHEN zif_abapgit_oo_object_fnc=>c_parts-locals_def.
         rs_issue-program = _read_class_include(
           iv_clsname = |{ is_issue-obj_name }|
